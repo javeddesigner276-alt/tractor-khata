@@ -124,3 +124,4 @@ if delete_check:
             st.rerun()
     else:
         st.warning("Abhi koi data nahi hai delete karne ke liye.")
+
