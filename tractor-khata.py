@@ -109,4 +109,18 @@ c1, c2, c3, c4 = st.columns(4)
 with c1: st.metric("Total Weight", f"{display_df['WEIGHT'].sum():.2f} KG")
 with c2: st.metric("Total Kamai", f"₹{display_df['KAMAI'].sum():.2f}")
 with c3: st.metric("Total Kharcha", f"₹{display_df['TOTAL_INV'].sum():.2f}")
-with c4: st.metric("Net Profit", f"₹{display_df['PROFIT'].sum():.2f}")
+with c4: st.metric("Net Profit", f"₹{display_df['PROFIT'].sum():.2f}")# --- Delete Feature (Ab Table ke niche dikhega) ---
+st.divider()
+st.subheader("🗑️ Record Hatayein (Delete)")
+delete_check = st.checkbox("Galti Sudharne ke liye yahan click karein")
+
+if delete_check:
+    if not df.empty:
+        row_to_delete = st.number_input("Kaun sa Row No. hatana hai?", min_value=0, max_value=len(df)-1, step=1)
+        if st.button("Hamesha ke liye Delete karein"):
+            df = df.drop(df.index[row_to_delete])
+            df.to_csv(DATA_FILE, index=False)
+            st.success(f"Row {row_to_delete} delete ho gayi!")
+            st.rerun()
+    else:
+        st.warning("Abhi koi data nahi hai delete karne ke liye.")
