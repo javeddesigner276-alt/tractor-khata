@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
 import os
+from fpdf import FPDF # PDF banane ke liye
 
-# App Configuration
-st.set_page_config(page_title="Tractor Management System", layout="wide")
+# 1. App Configuration - Name Update
+st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
 # Data File
 DATA_FILE = "tractor_data.csv"
@@ -12,14 +13,14 @@ DATA_FILE = "tractor_data.csv"
 if os.path.exists(DATA_FILE):
     df = pd.read_csv(DATA_FILE)
 else:
-    # Saare columns alag-alag define kiye hain
     df = pd.DataFrame(columns=["DATE", "TRACTOR", "ROUND", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER", "OTHER", "TOTAL_INV", "PROFIT"])
 
-st.title("🚜 Multi-Tractor Detailed Khata")
+# 2. App Title - Name Update
+st.title("🚜 JAVED RANGHAD TRACTOR KHATA")
 
 # --- Sidebar: Entry Form ---
 with st.sidebar:
-    st.header("Nayi Entry")
+    st.header("Nayi Entry Dalein")
     
     existing_tractors = ["Farmtrack 60", "NAGISH 106"]
     if not df.empty:
@@ -58,38 +59,54 @@ with st.sidebar:
 
 # --- Main Screen ---
 st.subheader("Records (Detailed Table)")
-# Filter option
 all_tractors = df["TRACTOR"].unique()
 selected_filter = st.multiselect("Tractor Filter", all_tractors, default=all_tractors)
 
 display_df = df[df["TRACTOR"].isin(selected_filter)]
-
-# Table display
 st.dataframe(display_df, use_container_width=True)
+
+# --- 3. PDF Generation Function ---
+def create_pdf(data):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(200, 10, txt="JAVED RANGHAD TRACTOR KHATA REPORT", ln=True, align='C')
+    pdf.set_font("Arial", size=10)
+    pdf.ln(10)
+    
+    # Table Header
+    cols = ["DATE", "TRACTOR", "WEIGHT", "KAMAI", "TOTAL_INV", "PROFIT"]
+    for col in cols:
+        pdf.cell(32, 10, col, 1)
+    pdf.ln()
+    
+    # Table Rows
+    for i, row in data.iterrows():
+        pdf.cell(32, 10, str(row['DATE']), 1)
+        pdf.cell(32, 10, str(row['TRACTOR']), 1)
+        pdf.cell(32, 10, str(row['WEIGHT']), 1)
+        pdf.cell(32, 10, str(row['KAMAI']), 1)
+        pdf.cell(32, 10, str(row['TOTAL_INV']), 1)
+        pdf.cell(32, 10, str(row['PROFIT']), 1)
+        pdf.ln()
+    
+    return pdf.output(dest='S').encode('latin-1')
+
+# --- Download Buttons ---
+if not display_df.empty:
+    col_dl1, col_dl2 = st.columns(2)
+    with col_dl1:
+        csv = display_df.to_csv(index=False).encode('utf-8')
+        st.download_button(label="📥 Download Excel (CSV)", data=csv, file_name='tractor_khata.csv')
+    with col_dl2:
+        pdf_bytes = create_pdf(display_df)
+        st.download_button(label="📄 Download PDF Report", data=pdf_bytes, file_name="tractor_report.pdf", mime="application/pdf")
 
 # --- Summary Boxes ---
 st.divider()
 st.subheader("Summary (Kul Hisab)")
 c1, c2, c3, c4 = st.columns(4)
-
-with c1:
-    st.metric("Total Weight", f"{display_df['WEIGHT'].sum():.2f} KG")
-with c2:
-    st.metric("Total Kamai", f"₹{display_df['KAMAI'].sum():.2f}")
-with c3:
-    st.metric("Total Kharcha", f"₹{display_df['TOTAL_INV'].sum():.2f}")
-with c4:
-    net = display_df['PROFIT'].sum()
-    st.metric("Net Profit", f"₹{net:.2f}", delta=f"Bachat")
-
-# Individual Expenses Breakdown
-st.write(f"**Kharche ka Byora:** Diesel: ₹{display_df['DIESEL'].sum()} | Driver: ₹{display_df['DRIVER'].sum()} | Other: ₹{display_df['OTHER'].sum()}")
-
-# Delete Feature
-st.divider()
-if st.checkbox("Galti Sudharein"):
-    idx = st.number_input("Row No. (Index)", min_value=0, max_value=len(df)-1 if len(df)>0 else 0)
-    if st.button("Delete"):
-        df = df.drop(df.index[idx])
-        df.to_csv(DATA_FILE, index=False)
-        st.rerun()
+with c1: st.metric("Total Weight", f"{display_df['WEIGHT'].sum():.2f} KG")
+with c2: st.metric("Total Kamai", f"₹{display_df['KAMAI'].sum():.2f}")
+with c3: st.metric("Total Kharcha", f"₹{display_df['TOTAL_INV'].sum():.2f}")
+with c4: st.metric("Net Profit", f"₹{display_df['PROFIT'].sum():.2f}")
