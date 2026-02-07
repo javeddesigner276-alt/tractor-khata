@@ -5,7 +5,7 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# Custom CSS for Design & White Labels
+# Custom CSS for Design & Black Text in Boxes
 def set_design(tractor_name):
     img_url = ""
     name_up = tractor_name.upper()
@@ -45,7 +45,7 @@ def set_design(tractor_name):
         background-color: #800000 !important;
     }}
     
-    /* Sidebar Labels & Headings - ALL WHITE */
+    /* Labels & Headings - WHITE */
     [data-testid="stSidebar"] label, 
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
@@ -55,12 +55,19 @@ def set_design(tractor_name):
         font-weight: bold !important;
     }}
 
-    /* Input Box Text - PURE BLACK */
+    /* INPUT BOXES & BUTTONS TEXT - PURE BLACK (Fix for your screenshot) */
     [data-testid="stSidebar"] input, 
     [data-testid="stSidebar"] select, 
-    [data-testid="stSidebar"] .stSelectbox div {{
+    [data-testid="stSidebar"] .stSelectbox div,
+    [data-testid="stSidebar"] button p,
+    [data-testid="stSidebar"] .stButton button {{
         color: #000000 !important; 
         font-weight: 900 !important;
+    }}
+
+    /* Placeholder text also Black */
+    ::placeholder {{
+        color: #444444 !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -69,7 +76,6 @@ def set_design(tractor_name):
 DATA_FILE = "tractor_data.csv"
 TRACTOR_LIST_FILE = "tractors.txt"
 
-# Load or Create Tractor List
 if os.path.exists(TRACTOR_LIST_FILE):
     with open(TRACTOR_LIST_FILE, "r") as f:
         base_tractors = [line.strip() for line in f.readlines()]
@@ -86,15 +92,14 @@ else:
 with st.sidebar:
     st.header("🚜 MENU")
     
-    # ➕ ADD NEW TRACTOR OPTION (Just below Menu)
     with st.expander("➕ ADD NEW TRACTOR"):
         new_t_name = st.text_input("Tractor Name Likhein")
         if st.button("ADD TRACTOR"):
-            if new_t_name and new_t_name not in base_tractors:
+            if new_t_name and new_t_name.upper() not in base_tractors:
                 base_tractors.append(new_t_name.upper())
                 with open(TRACTOR_LIST_FILE, "w") as f:
                     for t in base_tractors: f.write(t + "\n")
-                st.success(f"{new_t_name} Add Ho Gaya!")
+                st.success("Add Ho Gaya!")
                 st.rerun()
 
     active_tractor = st.selectbox("Apna Tractor Chunein", base_tractors)
@@ -114,34 +119,4 @@ with st.sidebar:
         total_inv = diesel + d_pay + other
         new_row = {
             "DATE": str(date), "TRACTOR": active_tractor, "DRIVER_NAME": d_name,
-            "ROUND": 1, "WEIGHT": weight, "RATE": rate, "KAMAI": round(kamai, 2),
-            "DIESEL": diesel, "DRIVER_EXP": d_pay, "OTHER": other,
-            "TOTAL_INV": round(total_inv, 2), "PROFIT": round(kamai - total_inv, 2)
-        }
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-        df.to_csv(DATA_FILE, index=False)
-        st.success("Save Ho Gaya!")
-        st.rerun()
-
-# --- 4. Main Page Display ---
-set_design(active_tractor)
-st.markdown(f'<p class="big-cherry-title">{active_tractor}</p>', unsafe_allow_html=True)
-
-t_df = df[df["TRACTOR"] == active_tractor]
-
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("1. TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f} KG")
-c2.metric("2. KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
-c3.metric("3. KUL KHARCHA", f"₹{t_df['TOTAL_INV'].sum():.2f}")
-c4.metric("4. NET PROFIT", f"₹{t_df['PROFIT'].sum():.2f}")
-
-st.divider()
-st.dataframe(t_df, use_container_width=True)
-
-with st.expander("🗑️ Galti Sudharein (Delete)"):
-    if not t_df.empty:
-        row = st.selectbox("Kaun sa No. hatana hai?", t_df.index)
-        if st.button("Humesha ke liye hatayein"):
-            df = df.drop(row)
-            df.to_csv(DATA_FILE, index=False)
-            st.rerun()
+            "ROUND": 1, "WEIGHT":
