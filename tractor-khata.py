@@ -2,23 +2,23 @@ import streamlit as st
 import pandas as pd
 from streamlit_gsheets import GSheetsConnection
 
-# --- 1. PAGE CONFIG ---
+# --- PAGE CONFIG ---
 st.set_page_config(page_title="JAVED TRACTOR KHATA", layout="wide")
 
-# Aapka Sheet Link
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1K8Umx9q0IEka1O6IrIo1DrMcGgtxGbDW4raQybV_Ljg/edit?usp=sharing"
+# Google Sheet Link
+url = "https://docs.google.com/spreadsheets/d/1K8Umx9q0IEka1O6IrIo1DrMcGgtxGbDW4raQybV_Ljg/edit?usp=sharing"
 
-# Connection setup
+# Connection Setup
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def load_data():
     try:
-        # ttl=0 isliye taaki save karte hi naya data dikhe
-        return conn.read(spreadsheet=SHEET_URL, ttl=0)
+        # ttl=0 matlab har baar naya data uthayega
+        return conn.read(spreadsheet=url, ttl=0)
     except:
         return pd.DataFrame(columns=["DATE", "TRACTOR", "DRIVER_NAME", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"])
 
-# --- 2. STYLE (WHITE & BOLD) ---
+# --- STYLE ---
 st.markdown("""
     <style>
     .stApp {
@@ -27,36 +27,26 @@ st.markdown("""
         background-size: cover; background-attachment: fixed;
     }
     .main-title { 
-        font-size: 70px !important; font-weight: 950 !important; color: #800000 !important; 
-        text-align: center; text-transform: uppercase; margin-top: -30px;
+        font-size: 60px !important; font-weight: 950 !important; color: #800000 !important; 
+        text-align: center; text-transform: uppercase;
     }
     [data-testid="stSidebar"] { background-color: #800000 !important; }
-    
-    /* MENU & NAYI ENTRY - White & Bold */
     [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
         color: white !important; font-weight: 900 !important; border-bottom: 2px solid white;
     }
     [data-testid="stSidebar"] label p { color: white !important; font-weight: 800 !important; font-size: 20px !important; }
-    
-    /* Input Boxes Text Black */
     [data-testid="stSidebar"] input { color: black !important; font-weight: bold; }
-    
-    /* Metrics */
     [data-testid="stMetricValue"] div { font-size: 40px !important; font-weight: 900 !important; color: #800000 !important; }
-    
-    /* Expander Box */
-    [data-testid="stExpander"] { background-color: white !important; border-radius: 10px; border: 2px solid #800000; }
-    [data-testid="stExpander"] p { color: black !important; font-weight: 900 !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. DATA & LOGIC ---
+# --- LOGIC ---
 df = load_data()
-tractor_list = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
+tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
 
 with st.sidebar:
     st.header("🚜 MENU")
-    active_t = st.selectbox("Tractor Chunein", tractor_list)
+    active_t = st.selectbox("Tractor Chunein", tractors)
     st.divider()
     
     st.subheader("📝 Nayi Entry")
@@ -69,58 +59,40 @@ with st.sidebar:
     ot = st.number_input("Other Kharcha", min_value=0.0)
 
     if st.button("💾 SAVE DATA"):
-        total_kamai = wt * rt
-        total_kharcha = ds + dx + ot
-        net_profit = total_kamai - total_kharcha
-        
+        km = wt * rt
+        inv = ds + dx + ot
         new_row = pd.DataFrame([{
             "DATE": str(dt), "TRACTOR": active_t, "DRIVER_NAME": dr,
-            "WEIGHT": wt, "RATE": rt, "KAMAI": round(total_kamai, 2), 
+            "WEIGHT": wt, "RATE": rt, "KAMAI": round(km, 2), 
             "DIESEL": ds, "DRIVER_EXP": dx, "OTHER": ot, 
-            "TOTAL_INV": round(total_kharcha, 2), "PROFIT": round(net_profit, 2)
+            "TOTAL_INV": round(inv, 2), "PROFIT": round(km - inv, 2)
         }])
         
-        # Data merge karke update karna
+        # Naya Data purane ke niche jodna
         updated_df = pd.concat([df, new_row], ignore_index=True)
-        # Naya fix: conn.update ko carefully call karna
-        try:
-            conn.update(spreadsheet=SHEET_URL, data=updated_df)
-            st.success("Google Sheet mein save ho gaya!")
-            st.rerun()
-        except Exception as e:
-            st.error(f"Error: Sheet ki 'Share' setting mein 'Editor' chunein.")
+        # Sheet Update
+        conn.update(spreadsheet=url, data=updated_df)
+        st.success("Badhai ho! Data Sheet mein save ho gaya.")
+        st.rerun()
 
-# --- 4. DISPLAY ---
+# --- DISPLAY ---
 st.markdown(f'<p class="main-title">{active_t}</p>', unsafe_allow_html=True)
+t_df = df[df["TRACTOR"] == active_t] if not df.empty else pd.DataFrame()
 
-# Filtering data
-if not df.empty and "TRACTOR" in df.columns:
-    t_df = df[df["TRACTOR"] == active_t]
-else:
-    t_df = pd.DataFrame()
-
-# Dashboard Metrics
-col1, col2, col3, col4 = st.columns(4)
-if not t_df.empty:
-    col1.metric("TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f}")
-    col2.metric("KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
-    col3.metric("KUL KHARCHA", f"₹{t_df['TOTAL_INV'].sum():.2f}")
-    col4.metric("NET PROFIT", f"₹{t_df['PROFIT'].sum():.2f}")
-else:
-    col1.metric("TOTAL WEIGHT", "0.00")
-    col2.metric("KUL KAMAI", "₹0.00")
-    col3.metric("KUL KHARCHA", "₹0.00")
-    col4.metric("NET PROFIT", "₹0.00")
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("TOTAL WEIGHT", f"{t_df['WEIGHT'].sum() if not t_df.empty else 0:.2f}")
+c2.metric("KUL KAMAI", f"₹{t_df['KAMAI'].sum() if not t_df.empty else 0:.2f}")
+c3.metric("KUL KHARCHA", f"₹{t_df['TOTAL_INV'].sum() if not t_df.empty else 0:.2f}")
+c4.metric("NET PROFIT", f"₹{t_df['PROFIT'].sum() if not t_df.empty else 0:.2f}")
 
 st.divider()
 st.dataframe(t_df, use_container_width=True)
 
-# Delete Option
 with st.expander("🗑️ GALTI SUDHAREIN (DELETE)"):
     if not t_df.empty:
-        row_id = st.selectbox("Kaunsa record hatana hai?", t_df.index)
+        row_id = st.selectbox("Delete karne ke liye Row chunein", t_df.index)
         if st.button("Humesha ke liye hatayein"):
             final_df = df.drop(row_id)
-            conn.update(spreadsheet=SHEET_URL, data=final_df)
-            st.warning("Record Delete Ho Gaya!")
+            conn.update(spreadsheet=url, data=final_df)
+            st.warning("Data Mita Diya Gaya!")
             st.rerun()
