@@ -45,7 +45,7 @@ with st.sidebar:
     st.title("🚜 KHATA MENU")
     
     # 1. Separate Pages for Tractors
-    all_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
+    all_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605"]
     if not df.empty:
         all_tractors = list(set(all_tractors + df["TRACTOR"].unique().tolist()))
     
@@ -118,3 +118,4 @@ with st.expander("🗑️ Purani Entry Hatayein"):
             df.to_csv(DATA_FILE, index=False)
             st.warning("Entry Deleted!")
             st.rerun()
+
