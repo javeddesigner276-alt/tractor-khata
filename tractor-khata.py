@@ -5,11 +5,11 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# --- 2. Custom Design (Har Tractor ke liye Clear Watermark & Cherry Sidebar) ---
+# --- 2. Custom Design (Cherry Sidebar & Clear Watermark for ALL) ---
 def apply_custom_design(tractor_name):
     name_up = tractor_name.upper()
     
-    # Alag-alag tractor ke liye alag photo links
+    # Sabhi tractors ke liye images
     if "FARMTRACK" in name_up:
         img_url = "https://th.bing.com/th/id/OIP.UeE_7mY6x89-f5v_F8Gj_AHaE8?rs=1&pid=ImgDetMain"
     elif "NOVO" in name_up or "605" in name_up:
@@ -17,11 +17,11 @@ def apply_custom_design(tractor_name):
     elif "NAGISH" in name_up:
         img_url = "https://th.bing.com/th/id/OIP.XG6nU7L2X_H0O7Q_y_XW_AHaE8?rs=1&pid=ImgDetMain"
     else:
-        img_url = "https://images.pexels.com/photos/162637/tractor-agriculture-farm-drive-162637.jpeg"
+        img_url = "https://cdn.pixabay.com/photo/2014/07/06/17/20/tractor-385681_1280.jpg"
 
     st.markdown(f"""
     <style>
-    /* 1. Main Background: FULL CLEAR WATERMARK (No White shade) */
+    /* Main Screen: NO WHITE SHADE, ONLY TRACTOR */
     .stApp {{
         background-image: url("{img_url}") !important;
         background-repeat: no-repeat !important;
@@ -30,7 +30,7 @@ def apply_custom_design(tractor_name):
         background-attachment: fixed !important;
     }}
 
-    /* 2. Sidebar: PAKKA CHERRY RED (Untitled-1.jpg marking ke hisaab se) */
+    /* Sidebar: DARK CHERRY RED (Aapki marking ke hisaab se) */
     [data-testid="stSidebar"] {{
         background-color: #800000 !important;
     }}
@@ -44,7 +44,7 @@ def apply_custom_design(tractor_name):
         font-weight: bold !important;
     }}
 
-    /* 3. Title: BIG WHITE (With Shadow) */
+    /* Title: BIG WHITE (With Shadow) */
     .tractor-title {{
         font-size: 85px !important;
         font-weight: 950 !important;
@@ -56,7 +56,7 @@ def apply_custom_design(tractor_name):
         text-transform: uppercase;
     }}
 
-    /* 4. Metrics Cards: White Glass Style */
+    /* Metrics: Sequence and Design */
     [data-testid="stMetric"] {{
         background-color: rgba(255, 255, 255, 0.95) !important;
         padding: 20px !important;
@@ -72,7 +72,7 @@ def apply_custom_design(tractor_name):
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. Data Loading ---
+# --- 3. Data Management ---
 DATA_FILE = "tractor_data.csv"
 if os.path.exists(DATA_FILE):
     df = pd.read_csv(DATA_FILE)
@@ -80,10 +80,9 @@ else:
     cols = ["DATE", "TRACTOR", "DRIVER_NAME", "ROUND", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
     df = pd.DataFrame(columns=cols)
 
-# --- 4. Sidebar Menu ---
+# --- 4. Sidebar Setup ---
 with st.sidebar:
-    st.header("🚜 JAVED RANGHAD")
-    # Nagish 106 ko list mein shamil kiya
+    st.header("🚜 DASHBOARD MENU")
     base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
     active_tractor = st.selectbox("Apna Tractor Chunein", base_tractors)
     st.divider()
@@ -95,14 +94,3 @@ with st.sidebar:
     rate = st.number_input("Rate", min_value=0.0, format="%.4f")
     
     st.markdown("---")
-    st.markdown("**Kharche (Investment)**")
-    diesel = st.number_input("Diesel", min_value=0.0)
-    d_pay = st.number_input("Driver Exp", min_value=0.0)
-    other = st.number_input("Other", min_value=0.0)
-
-    if st.button("💾 SAVE RECORD"):
-        kamai = weight * rate
-        total_inv = diesel + d_pay + other
-        new_row = {
-            "DATE": str(date), "TRACTOR": active_tractor, "DRIVER_NAME": d_name,
-            "ROUND": 1, "WEIGHT": weight, "RATE": rate, "KAMAI": round
