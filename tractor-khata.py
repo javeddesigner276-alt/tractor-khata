@@ -13,7 +13,6 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 def load_data():
     try:
-        # ttl=0 isliye taaki refresh karne par naya data turant dikhe
         return conn.read(spreadsheet=SHEET_URL, ttl=0)
     except:
         return pd.DataFrame(columns=["DATE", "TRACTOR", "DRIVER_NAME", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"])
@@ -28,15 +27,46 @@ def set_design():
         background-size: cover; background-position: center; background-attachment: fixed;
     }}
     .big-cherry-title {{ 
-        font-size: 100px !important; font-weight: 900 !important; color: #800000 !important; 
+        font-size: 100px !important; font-weight: 950 !important; color: #800000 !important; 
         text-align: center !important; margin-top: -50px !important; text-transform: uppercase;
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }}
+    
+    /* SIDEBAR BACKGROUND */
     [data-testid="stSidebar"] {{ background-color: #800000 !important; }}
-    [data-testid="stSidebar"] label {{ color: #FFFFFF !important; font-size: 20px !important; font-weight: 900 !important; }}
-    [data-testid="stMetricValue"] div {{ font-size: 45px !important; font-weight: 950 !important; color: #800000 !important; }}
-    /* Expander box styling */
-    [data-testid="stExpander"] {{ background-color: white !important; border-radius: 10px; }}
-    [data-testid="stExpander"] p {{ color: black !important; font-weight: bold; }}
+    
+    /* MENU & NAYI ENTRY (Headings) - White & Extra Bold */
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {{
+        color: #FFFFFF !important;
+        font-size: 32px !important;
+        font-weight: 900 !important;
+        text-transform: uppercase;
+        border-bottom: 3px solid #FFFFFF;
+        padding-bottom: 5px;
+        margin-bottom: 20px !important;
+    }}
+
+    /* SIDEBAR LABELS (Tarik, Driver Name etc.) - White & Bold */
+    [data-testid="stSidebar"] label p {{
+        color: #FFFFFF !important;
+        font-size: 22px !important;
+        font-weight: 800 !important;
+    }}
+
+    /* INPUT BOXES - Text Black & Bold */
+    [data-testid="stSidebar"] input, [data-testid="stSidebar"] select {{
+        color: #000000 !important;
+        font-weight: 900 !important;
+        font-size: 18px !important;
+    }}
+
+    /* METRICS SECTION */
+    [data-testid="stMetricLabel"] p {{ font-size: 24px !important; font-weight: 900 !important; color: #333 !important; }}
+    [data-testid="stMetricValue"] div {{ font-size: 50px !important; font-weight: 950 !important; color: #800000 !important; }}
+    
+    /* White box for Expander */
+    [data-testid="stExpander"] {{ background-color: white !important; border-radius: 10px; border: 2px solid #800000; }}
+    [data-testid="stExpander"] p {{ color: black !important; font-weight: 900 !important; font-size: 18px !important; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -49,11 +79,11 @@ if not df.empty and "TRACTOR" in df.columns:
 
 # --- 3. Sidebar ---
 with st.sidebar:
-    st.header("🚜 MENU")
+    st.header("🚜 MENU") # Ab ye White aur Bold dikhega
     active_tractor = st.selectbox("Tractor Chunein", base_tractors)
     st.divider()
     
-    st.subheader("📝 Nayi Entry")
+    st.subheader("📝 Nayi Entry") # Ab ye White aur Bold dikhega
     date = st.date_input("Tarik")
     d_name = st.text_input("Driver ka Naam")
     weight = st.number_input("Weight (KG)", min_value=0.0)
@@ -83,24 +113,4 @@ st.markdown(f'<p class="big-cherry-title">{active_tractor}</p>', unsafe_allow_ht
 t_df = df[df["TRACTOR"] == active_tractor] if not df.empty else pd.DataFrame()
 
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("TOTAL WEIGHT", f"{t_df['WEIGHT'].sum() if not t_df.empty else 0:.2f} KG")
-c2.metric("KUL KAMAI", f"₹{t_df['KAMAI'].sum() if not t_df.empty else 0:.2f}")
-c3.metric("KUL KHARCHA", f"₹{t_df['TOTAL_INV'].sum() if not t_df.empty else 0:.2f}")
-c4.metric("NET PROFIT", f"₹{t_df['PROFIT'].sum() if not t_df.empty else 0:.2f}")
-
-st.divider()
-st.dataframe(t_df, use_container_width=True)
-
-# --- 5. Delete Section ---
-with st.expander("🗑️ Galti Sudharein (Delete)"):
-    if not t_df.empty:
-        # Hum index list dikhayenge taaki sahi record delete ho
-        options = t_df.index.tolist()
-        to_delete = st.selectbox("Hatane ke liye Row chunein", options)
-        if st.button("Confirm Delete"):
-            new_df = df.drop(to_delete)
-            conn.update(spreadsheet=SHEET_URL, data=new_df)
-            st.warning("Record Delete Ho Gaya!")
-            st.rerun()
-    else:
-        st.write("Delete karne ke liye koi data nahi hai.")
+c1.metric("TOTAL
