@@ -64,7 +64,7 @@ with st.sidebar:
     st.divider()
     
     st.subheader("📝 Nayi Entry")
-    date_val = st.date_input("Tarik", format="DD/MM/YYYY") 
+    date_val = st.date_input("DATE", format="DD/MM/YYYY") 
     d_name = st.text_input("Driver ka Naam")
     u_round = st.number_input("Round No.", min_value=1, step=1)
     weight = st.number_input("Weight (KG)", min_value=0.0)
@@ -125,4 +125,5 @@ with st.expander("🗑️ Galti Sudharein (Delete)"):
             df = df.drop(row_idx)
             df.to_csv(DATA_FILE, index=False)
             st.rerun()
+
 
