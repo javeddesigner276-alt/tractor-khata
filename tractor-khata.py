@@ -8,11 +8,12 @@ st.set_page_config(page_title="JAVED TRACTOR KHATA", layout="wide")
 # Aapka Sheet Link
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1K8Umx9q0IEka1O6IrIo1DrMcGgtxGbDW4raQybV_Ljg/edit?usp=sharing"
 
-# Connection
+# Connection setup
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def load_data():
     try:
+        # ttl=0 isliye taaki save karte hi naya data dikhe
         return conn.read(spreadsheet=SHEET_URL, ttl=0)
     except:
         return pd.DataFrame(columns=["DATE", "TRACTOR", "DRIVER_NAME", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"])
@@ -79,16 +80,24 @@ with st.sidebar:
             "TOTAL_INV": round(total_kharcha, 2), "PROFIT": round(net_profit, 2)
         }])
         
+        # Data merge karke update karna
         updated_df = pd.concat([df, new_row], ignore_index=True)
-        conn.update(spreadsheet=SHEET_URL, data=updated_df)
-        st.success("Save Ho Gaya!")
-        st.rerun()
+        # Naya fix: conn.update ko carefully call karna
+        try:
+            conn.update(spreadsheet=SHEET_URL, data=updated_df)
+            st.success("Google Sheet mein save ho gaya!")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Error: Sheet ki 'Share' setting mein 'Editor' chunein.")
 
 # --- 4. DISPLAY ---
 st.markdown(f'<p class="main-title">{active_t}</p>', unsafe_allow_html=True)
 
 # Filtering data
-t_df = df[df["TRACTOR"] == active_t] if not df.empty else pd.DataFrame()
+if not df.empty and "TRACTOR" in df.columns:
+    t_df = df[df["TRACTOR"] == active_t]
+else:
+    t_df = pd.DataFrame()
 
 # Dashboard Metrics
 col1, col2, col3, col4 = st.columns(4)
@@ -113,5 +122,5 @@ with st.expander("🗑️ GALTI SUDHAREIN (DELETE)"):
         if st.button("Humesha ke liye hatayein"):
             final_df = df.drop(row_id)
             conn.update(spreadsheet=SHEET_URL, data=final_df)
-            st.warning("Record Mita Diya Gaya!")
+            st.warning("Record Delete Ho Gaya!")
             st.rerun()
