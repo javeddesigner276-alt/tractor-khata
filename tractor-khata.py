@@ -5,54 +5,48 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# --- 2. Custom Design (Bada Naam aur Watermark) ---
+# --- 2. Custom Design (Bada Naam aur Visible Watermark) ---
 def apply_custom_design(tractor_name):
-    # Naye aur High-Quality Image Links jo load honge
     name_up = tractor_name.upper()
     
-    # Default Image
-    img_url = "https://images.unsplash.com/photo-1530268578403-df6e89da0d30?q=80&w=2070&auto=format&fit=crop"
-    
+    # Pakke links jo 100% load honge (High Quality)
     if "FARMTRACK" in name_up:
-        # Blue Tractor / Farmtrack Style
-        img_url = "https://images.unsplash.com/photo-1594411126605-7208f237f37e?q=80&w=2072&auto=format&fit=crop"
+        # Blue Tractor Image
+        img_url = "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg"
     elif "NOVO" in name_up or "605" in name_up:
-        # Red/Modern Tractor / Novo Style
-        img_url = "https://images.unsplash.com/photo-1622329606883-9b0f69a5015b?q=80&w=1974&auto=format&fit=crop"
-    elif "NAGISH" in name_up:
-        # Heavy Duty / Nagish Style
-        img_url = "https://images.unsplash.com/photo-1535249416175-df0567ef294f?q=80&w=2070&auto=format&fit=crop"
+        # Red Tractor Image
+        img_url = "https://images.pexels.com/photos/2592537/pexels-photo-2592537.jpeg"
+    else:
+        # Default Farm Image
+        img_url = "https://images.pexels.com/photos/162637/tractor-agriculture-farm-drive-162637.jpeg"
 
     st.markdown(f"""
     <style>
-    /* Background Watermark Settings */
+    /* Background setup - Opacity adjusted to 0.7 for better visibility */
     .stApp {{
-        background: linear-gradient(rgba(255,255,255,0.88), rgba(255,255,255,0.88)), url("{img_url}");
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-attachment: fixed;
+        background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), 
+                    url("{img_url}") !important;
+        background-repeat: no-repeat !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
     }}
-    /* Tractor Name: DOUBLE SIZE (BIG) - RED COLOR */
+    /* Tractor Name: DOUBLE SIZE (BIG) - DARK RED */
     .tractor-title {{
-        font-size: 80px !important;
-        font-weight: 800 !important;
-        color: #B22222 !important;
+        font-size: 110px !important;
+        font-weight: 950 !important;
+        color: #D32F2F !important;
         text-align: center !important;
-        margin-top: -40px !important;
-        margin-bottom: 10px !important;
-        text-shadow: 3px 3px 8px rgba(0,0,0,0.2);
-        font-family: 'Impact', sans-serif;
-        letter-spacing: 2px;
+        margin-top: -50px !important;
+        margin-bottom: 20px !important;
+        text-shadow: 4px 4px 12px rgba(0,0,0,0.4) !important;
+        font-family: 'Arial Black', Gadget, sans-serif !important;
     }}
-    /* Metrics Styling - DARK BLUE */
+    /* Metrics Styling - DARK BLUE & BOLD */
     [data-testid="stMetricValue"] {{
-        font-size: 45px !important;
-        color: #000080 !important;
-        font-weight: bold !important;
-    }}
-    /* Sidebar Styling */
-    section[data-testid="stSidebar"] {{
-        background-color: #f0f2f6;
+        font-size: 48px !important;
+        color: #1A237E !important;
+        font-weight: 900 !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -69,13 +63,14 @@ else:
 with st.sidebar:
     st.header("🚜 DASHBOARD MENU")
     
-    # Default list
-    base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
+    # Nagish hata diya gaya hai, ab sirf Farmtrack aur Novo hain
+    base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605"]
     
-    # Add any new tractors found in the data
     if not df.empty:
         existing_tractors = df["TRACTOR"].unique().tolist()
         all_tractors = sorted(list(set(base_tractors + existing_tractors)))
+        # Nagish ko agar purane data mein hai toh bhi filter se nikalne ke liye:
+        if "NAGISH 106" in all_tractors: all_tractors.remove("NAGISH 106")
     else:
         all_tractors = base_tractors
     
@@ -100,32 +95,22 @@ with st.sidebar:
         profit = kamai - total_inv
         
         new_row = {
-            "DATE": str(date), 
-            "TRACTOR": active_tractor, 
-            "DRIVER_NAME": d_name,
-            "ROUND": 1, 
-            "WEIGHT": weight, 
-            "RATE": rate, 
-            "KAMAI": round(kamai, 2),
-            "DIESEL": diesel, 
-            "DRIVER_EXP": d_pay, 
-            "OTHER": other,
-            "TOTAL_INV": round(total_inv, 2), 
-            "PROFIT": round(profit, 2)
+            "DATE": str(date), "TRACTOR": active_tractor, "DRIVER_NAME": d_name,
+            "ROUND": 1, "WEIGHT": weight, "RATE": rate, "KAMAI": round(kamai, 2),
+            "DIESEL": diesel, "DRIVER_EXP": d_pay, "OTHER": other,
+            "TOTAL_INV": round(total_inv, 2), "PROFIT": round(profit, 2)
         }
-        
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         df.to_csv(DATA_FILE, index=False)
-        st.success(f"Record Saved for {active_tractor}!")
+        st.success(f"Saved for {active_tractor}!")
         st.rerun()
 
 # --- 5. Main Page Display ---
 apply_custom_design(active_tractor)
 
-# BIG TRACTOR NAME (Top Center)
+# BIG TRACTOR NAME
 st.markdown(f'<h1 class="tractor-title">{active_tractor}</h1>', unsafe_allow_html=True)
 
-# Separate Data for Selected Tractor
 t_df = df[df["TRACTOR"] == active_tractor]
 
 # SEQUENCE (1. Weight, 2. Kamai, 3. Kharcha, 4. Profit)
@@ -136,8 +121,6 @@ col3.metric("3. KUL KHARCHA", f"₹{t_df['TOTAL_INV'].sum():.2f}")
 col4.metric("4. NET PROFIT", f"₹{t_df['PROFIT'].sum():.2f}")
 
 st.divider()
-
-# Records Table
 st.subheader(f"📊 Detailed Table: {active_tractor}")
 st.dataframe(t_df, use_container_width=True)
 
@@ -145,14 +128,9 @@ st.dataframe(t_df, use_container_width=True)
 st.divider()
 with st.expander("🗑️ Entry Delete Karein (Galti Sudharein)"):
     if not t_df.empty:
-        # Selection using the original index for accurate deletion
         row_to_del = st.selectbox("Kaun sa Index hatana hai?", t_df.index)
         if st.button("Confirm Delete"):
             df = df.drop(row_to_del)
             df.to_csv(DATA_FILE, index=False)
             st.warning("Entry Hata di gayi!")
             st.rerun()
-    else:
-        st.info("Abhi koi data nahi hai delete karne ke liye.")
-
-
