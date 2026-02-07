@@ -5,7 +5,7 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# --- 2. Custom Design (Sidebar Color Shift & Clear Watermark) ---
+# --- 2. Custom Design (Sidebar Color Shift & Clear Main Screen) ---
 def apply_custom_design(tractor_name):
     name_up = tractor_name.upper()
     
@@ -19,7 +19,7 @@ def apply_custom_design(tractor_name):
 
     st.markdown(f"""
     <style>
-    /* 1. Main Background: NO COLOR, ONLY WATERMARK */
+    /* 1. Main Background: NO COLOR OVERLAY, ONLY CLEAR WATERMARK */
     .stApp {{
         background: url("{img_url}") !important;
         background-repeat: no-repeat !important;
@@ -28,44 +28,35 @@ def apply_custom_design(tractor_name):
         background-attachment: fixed !important;
     }}
 
-    /* 2. Sidebar: CHERRY / DARK RED COLOUR SHIFT */
+    /* 2. Sidebar: CHERRY COLOUR SHIFTED HERE */
     section[data-testid="stSidebar"] {{
-        background-color: #700000 !important; /* Dark Cherry Color */
-        color: white !important;
+        background-color: #700000 !important; /* Gehra Cherry Colour */
     }}
     
-    /* Sidebar ke andar ka text white */
+    /* Sidebar text colour to white for visibility */
     section[data-testid="stSidebar"] .stMarkdown, 
-    section[data-testid="stSidebar"] label, 
-    section[data-testid="stSidebar"] h1, 
-    section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] h3 {{
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] h1 {{
         color: white !important;
     }}
 
-    /* 3. Tractor Title: BIG & SHADOWED (For visibility on photo) */
+    /* 3. Title Styling */
     .tractor-title {{
-        font-size: 100px !important;
-        font-weight: 950 !important;
+        font-size: 80px !important;
+        font-weight: 900 !important;
         color: #D32F2F !important; 
         text-align: center !important;
         margin-top: -50px !important;
-        text-shadow: 3px 3px 10px rgba(255,255,255,0.8), -2px -2px 5px rgba(0,0,0,0.5) !important;
+        text-shadow: 2px 2px 8px rgba(255,255,255,0.8) !important;
         font-family: 'Arial Black', sans-serif !important;
     }}
 
-    /* 4. Metrics: Semi-Transparent White for readability */
+    /* 4. Metrics Cards (Semi-Transparent) */
     [data-testid="stMetric"] {{
-        background-color: rgba(255, 255, 255, 0.85) !important;
+        background-color: rgba(255, 255, 255, 0.9) !important;
         padding: 15px !important;
         border-radius: 10px !important;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important;
-    }}
-
-    /* Table styling */
-    .stDataFrame {{
-        background-color: rgba(255, 255, 255, 0.9) !important;
-        border-radius: 10px !important;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.2) !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -82,7 +73,7 @@ else:
 with st.sidebar:
     st.header("🚜 DASHBOARD MENU")
     base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605"]
-    active_tractor = st.selectbox("Tractor Chunein", base_tractors)
+    active_tractor = st.selectbox("Apna Tractor Chunein", base_tractors)
     st.divider()
     
     st.subheader("📝 Nayi Entry")
@@ -92,9 +83,9 @@ with st.sidebar:
     rate = st.number_input("Rate", min_value=0.0, format="%.4f")
     
     st.markdown("**Kharche**")
-    diesel = st.number_input("Diesel", min_value=0.0)
-    d_pay = st.number_input("Driver Exp", min_value=0.0)
-    other = st.number_input("Other", min_value=0.0)
+    diesel = st.number_input("Diesel Kharcha", min_value=0.0)
+    d_pay = st.number_input("Driver Kharcha", min_value=0.0)
+    other = st.number_input("Other Kharcha", min_value=0.0)
 
     if st.button("💾 SAVE RECORD"):
         kamai = weight * rate
@@ -104,19 +95,3 @@ with st.sidebar:
             "ROUND": 1, "WEIGHT": weight, "RATE": rate, "KAMAI": round(kamai, 2),
             "DIESEL": diesel, "DRIVER_EXP": d_pay, "OTHER": other,
             "TOTAL_INV": round(total_inv, 2), "PROFIT": round(kamai - total_inv, 2)
-        }
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-        df.to_csv(DATA_FILE, index=False)
-        st.success("Save Ho Gaya!")
-        st.rerun()
-
-# --- 5. Main Page Display (ONLY WATERMARK) ---
-apply_custom_design(active_tractor)
-
-st.markdown(f'<h1 class="tractor-title">{active_tractor}</h1>', unsafe_allow_html=True)
-
-t_df = df[df["TRACTOR"] == active_tractor]
-
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("1. TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f} KG")
-col2.metric("2. KUL KAMAI", f"₹{t_df
