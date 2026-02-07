@@ -85,6 +85,8 @@ def set_design():
 
 # --- 2. Data Management ---
 DATA_FILE = "tractor_data.csv"
+TRACTOR_LIST_FILE = "tractors.txt"
+
 if os.path.exists(TRACTOR_LIST_FILE):
     with open(TRACTOR_LIST_FILE, "r") as f:
         base_tractors = [line.strip() for line in f.readlines()]
@@ -169,6 +171,4 @@ with st.expander("🗑️ Galti Sudharein (Delete)"):
             df = df.drop(row)
             df.to_csv(DATA_FILE, index=False)
             st.rerun()
-
-
 
