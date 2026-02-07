@@ -35,7 +35,7 @@ TRACTOR_LIST_FILE = "tractors.txt"
 # Load Tractor List
 if os.path.exists(TRACTOR_LIST_FILE):
     with open(TRACTOR_LIST_FILE, "r") as f:
-        base_tractors = [line.strip() for line in f.readlines()]
+        base_tractors = [line.strip() for line in f.readlines() if line.strip()]
 else:
     base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605"]
 
@@ -50,14 +50,28 @@ else:
 with st.sidebar:
     st.header("🚜 MENU")
     
-    with st.expander("➕ ADD NEW TRACTOR"):
-        new_t_name = st.text_input("Tractor Name Likhein")
+    # ➕ ADD / ➖ REMOVE TRACTOR Section
+    with st.expander("🛠️ MANAGE TRACTORS"):
+        # Add Section
+        new_t_name = st.text_input("Naya Tractor Add Karein")
         if st.button("ADD TRACTOR"):
             if new_t_name and new_t_name.upper() not in base_tractors:
                 base_tractors.append(new_t_name.upper())
                 with open(TRACTOR_LIST_FILE, "w") as f:
                     for t in base_tractors: f.write(t + "\n")
-                st.success("Add Ho Gaya!")
+                st.success(f"{new_t_name.upper()} Add Ho Gaya!")
+                st.rerun()
+        
+        st.divider()
+        
+        # Remove Section
+        if len(base_tractors) > 0:
+            remove_t = st.selectbox("Tractor Hatayein", base_tractors, key="rem_t")
+            if st.button("REMOVE TRACTOR", type="primary"):
+                base_tractors.remove(remove_t)
+                with open(TRACTOR_LIST_FILE, "w") as f:
+                    for t in base_tractors: f.write(t + "\n")
+                st.warning(f"{remove_t} Hat gaya!")
                 st.rerun()
 
     active_tractor = st.selectbox("Apna Tractor Chunein", base_tractors)
@@ -118,12 +132,10 @@ if not t_df.empty:
 else:
     st.info("Bhai, abhi koi data nahi hai.")
 
-with st.expander("🗑️ Galti Sudharein (Delete)"):
+with st.expander("🗑️ Galti Sudharein (Entry Delete)"):
     if not t_df.empty:
         row_idx = st.selectbox("Hatane wala No. select karein", t_df.index)
         if st.button("Humesha ke liye hatayein"):
             df = df.drop(row_idx)
             df.to_csv(DATA_FILE, index=False)
             st.rerun()
-
-
