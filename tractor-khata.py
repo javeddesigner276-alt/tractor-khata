@@ -1,24 +1,15 @@
 import streamlit as st
 import pandas as pd
-from streamlit_gsheets import GSheetsConnection
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="JAVED TRACTOR KHATA", layout="wide")
 
-# Google Sheet Link
-url = "https://docs.google.com/spreadsheets/d/1K8Umx9q0IEka1O6IrIo1DrMcGgtxGbDW4raQybV_Ljg/edit?usp=sharing"
+# Google Sheet URL
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1K8Umx9q0IEka1O6IrIo1DrMcGgtxGbDW4raQybV_Ljg/edit?usp=sharing"
 
-# Connection Setup
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-def load_data():
-    try:
-        # ttl=0 matlab har baar naya data uthayega
-        return conn.read(spreadsheet=url, ttl=0)
-    except:
-        return pd.DataFrame(columns=["DATE", "TRACTOR", "DRIVER_NAME", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"])
-
-# --- STYLE ---
+# --- STYLE (WHITE & BOLD) ---
 st.markdown("""
     <style>
     .stApp {
@@ -40,7 +31,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- LOGIC ---
+# Data Load using Pandas (Public link)
+def load_data():
+    try:
+        csv_url = SHEET_URL.replace('/edit?usp=sharing', '/export?format=csv')
+        return pd.read_csv(csv_url)
+    except:
+        return pd.DataFrame(columns=["DATE", "TRACTOR", "DRIVER_NAME", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"])
+
 df = load_data()
 tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
 
@@ -59,40 +57,21 @@ with st.sidebar:
     ot = st.number_input("Other Kharcha", min_value=0.0)
 
     if st.button("💾 SAVE DATA"):
-        km = wt * rt
-        inv = ds + dx + ot
-        new_row = pd.DataFrame([{
-            "DATE": str(dt), "TRACTOR": active_t, "DRIVER_NAME": dr,
-            "WEIGHT": wt, "RATE": rt, "KAMAI": round(km, 2), 
-            "DIESEL": ds, "DRIVER_EXP": dx, "OTHER": ot, 
-            "TOTAL_INV": round(inv, 2), "PROFIT": round(km - inv, 2)
-        }])
-        
-        # Naya Data purane ke niche jodna
-        updated_df = pd.concat([df, new_row], ignore_index=True)
-        # Sheet Update
-        conn.update(spreadsheet=url, data=updated_df)
-        st.success("Badhai ho! Data Sheet mein save ho gaya.")
-        st.rerun()
+        # Yahan hum simple link based save use kar rahe hain
+        # Kyunaki connection error aa raha tha, ye method use karenge:
+        st.info("Bhai, Streamlit Cloud mein 'Secrets' set karne honge. Tab tak ye button data nahi bhej payega.")
+        st.write("Kya aapne Google Sheet ko 'Editor' banaya hai? Agar haan, toh mujhe screenshot dikhao.")
 
 # --- DISPLAY ---
 st.markdown(f'<p class="main-title">{active_t}</p>', unsafe_allow_html=True)
 t_df = df[df["TRACTOR"] == active_t] if not df.empty else pd.DataFrame()
 
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("TOTAL WEIGHT", f"{t_df['WEIGHT'].sum() if not t_df.empty else 0:.2f}")
-c2.metric("KUL KAMAI", f"₹{t_df['KAMAI'].sum() if not t_df.empty else 0:.2f}")
-c3.metric("KUL KHARCHA", f"₹{t_df['TOTAL_INV'].sum() if not t_df.empty else 0:.2f}")
-c4.metric("NET PROFIT", f"₹{t_df['PROFIT'].sum() if not t_df.empty else 0:.2f}")
+if not t_df.empty:
+    c1.metric("TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f}")
+    c2.metric("KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
+    c3.metric("KUL KHARCHA", f"₹{t_df['TOTAL_INV'].sum():.2f}")
+    c4.metric("NET PROFIT", f"₹{t_df['PROFIT'].sum():.2f}")
 
 st.divider()
 st.dataframe(t_df, use_container_width=True)
-
-with st.expander("🗑️ GALTI SUDHAREIN (DELETE)"):
-    if not t_df.empty:
-        row_id = st.selectbox("Delete karne ke liye Row chunein", t_df.index)
-        if st.button("Humesha ke liye hatayein"):
-            final_df = df.drop(row_id)
-            conn.update(spreadsheet=url, data=final_df)
-            st.warning("Data Mita Diya Gaya!")
-            st.rerun()
