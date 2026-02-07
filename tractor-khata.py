@@ -5,12 +5,12 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# Custom CSS for Design & Text Colors
+# Custom CSS for Design & White Labels
 def set_design(tractor_name):
     img_url = ""
     name_up = tractor_name.upper()
     
-    # Background logic (Nagish style for all)
+    # Background logic
     if "FARMTRACK" in name_up:
         img_url = "https://th.bing.com/th/id/OIP.UeE_7mY6x89-f5v_F8Gj_AHaE8?rs=1&pid=ImgDetMain"
     elif "NOVO" in name_up or "605" in name_up:
@@ -22,7 +22,6 @@ def set_design(tractor_name):
 
     st.markdown(f"""
     <style>
-    /* 1. Background Watermark */
     .stApp {{
         background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), 
                     url("{img_url}");
@@ -31,9 +30,8 @@ def set_design(tractor_name):
         background-attachment: fixed;
     }}
     
-    /* 2. CHERRY RED EXTRA BIG TITLE */
     .big-cherry-title {{ 
-        font-size: 120px !important; 
+        font-size: 110px !important; 
         font-weight: 950 !important; 
         color: #800000 !important; 
         text-align: center !important; 
@@ -43,54 +41,41 @@ def set_design(tractor_name):
         text-transform: uppercase;
     }}
 
-    /* 3. SIDEBAR CHERRY COLOUR */
     [data-testid="stSidebar"] {{
         background-color: #800000 !important;
     }}
     
-    /* 4. SIDEBAR HEADINGS (MENU & NAYI ENTRY) - WHITE */
+    /* Sidebar Labels & Headings - ALL WHITE */
+    [data-testid="stSidebar"] label, 
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3,
-    [data-testid="stSidebar"] .stMarkdown p {{
+    [data-testid="stSidebar"] p {{
         color: #FFFFFF !important;
-        font-weight: bold !important;
-        font-size: 24px !important;
-    }}
-
-    /* 5. SIDEBAR LABELS - WHITE */
-    [data-testid="stSidebar"] label {{
-        color: #FFFFFF !important;
-        font-size: 18px !important;
         font-weight: bold !important;
     }}
 
-    /* 6. INPUT BOXES TEXT MATTER - PURE BLACK */
+    /* Input Box Text - PURE BLACK */
     [data-testid="stSidebar"] input, 
     [data-testid="stSidebar"] select, 
-    [data-testid="stSidebar"] div[role="listbox"] {{
+    [data-testid="stSidebar"] .stSelectbox div {{
         color: #000000 !important; 
         font-weight: 900 !important;
-        background-color: #FFFFFF !important;
-    }}
-    
-    /* Fix for number inputs and text inputs specifically */
-    input[type="text"], input[type="number"], .stSelectbox div {{
-        color: #000000 !important;
-    }}
-
-    /* 7. Metrics Cards */
-    [data-testid="stMetric"] {{
-        background-color: white !important;
-        border-radius: 12px !important;
-        border-left: 10px solid #800000 !important;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.1) !important;
     }}
     </style>
     """, unsafe_allow_html=True)
 
 # --- 2. Data Management ---
 DATA_FILE = "tractor_data.csv"
+TRACTOR_LIST_FILE = "tractors.txt"
+
+# Load or Create Tractor List
+if os.path.exists(TRACTOR_LIST_FILE):
+    with open(TRACTOR_LIST_FILE, "r") as f:
+        base_tractors = [line.strip() for line in f.readlines()]
+else:
+    base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
+
 if os.path.exists(DATA_FILE):
     df = pd.read_csv(DATA_FILE)
 else:
@@ -100,15 +85,19 @@ else:
 # --- 3. Sidebar Setup ---
 with st.sidebar:
     st.header("🚜 MENU")
-    all_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
-    if not df.empty:
-        # Keep list order clean
-        unique_tractors = df["TRACTOR"].unique().tolist()
-        for t in unique_tractors:
-            if t not in all_tractors:
-                all_tractors.append(t)
     
-    active_tractor = st.selectbox("Apna Tractor Chunein", all_tractors)
+    # ➕ ADD NEW TRACTOR OPTION (Just below Menu)
+    with st.expander("➕ ADD NEW TRACTOR"):
+        new_t_name = st.text_input("Tractor Name Likhein")
+        if st.button("ADD TRACTOR"):
+            if new_t_name and new_t_name not in base_tractors:
+                base_tractors.append(new_t_name.upper())
+                with open(TRACTOR_LIST_FILE, "w") as f:
+                    for t in base_tractors: f.write(t + "\n")
+                st.success(f"{new_t_name} Add Ho Gaya!")
+                st.rerun()
+
+    active_tractor = st.selectbox("Apna Tractor Chunein", base_tractors)
     st.divider()
     
     st.subheader("📝 Nayi Entry")
@@ -136,13 +125,10 @@ with st.sidebar:
 
 # --- 4. Main Page Display ---
 set_design(active_tractor)
-
-# Main Title (Cherry & Huge)
 st.markdown(f'<p class="big-cherry-title">{active_tractor}</p>', unsafe_allow_html=True)
 
 t_df = df[df["TRACTOR"] == active_tractor]
 
-# Sequential Metrics
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("1. TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f} KG")
 c2.metric("2. KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
@@ -152,7 +138,6 @@ c4.metric("4. NET PROFIT", f"₹{t_df['PROFIT'].sum():.2f}")
 st.divider()
 st.dataframe(t_df, use_container_width=True)
 
-# Delete Option
 with st.expander("🗑️ Galti Sudharein (Delete)"):
     if not t_df.empty:
         row = st.selectbox("Kaun sa No. hatana hai?", t_df.index)
