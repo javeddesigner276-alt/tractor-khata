@@ -5,11 +5,11 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# --- 2. Custom Professional Design (Dark Dashboard Style) ---
+# --- 2. Custom Cherry Design (High Visibility Watermark) ---
 def apply_custom_design(tractor_name):
     name_up = tractor_name.upper()
     
-    # Asli Tractor Images (High Visibility)
+    # Asli Tractor Images
     if "FARMTRACK" in name_up:
         img_url = "https://th.bing.com/th/id/OIP.UeE_7mY6x89-f5v_F8Gj_AHaE8?rs=1&pid=ImgDetMain"
     elif "NOVO" in name_up or "605" in name_up:
@@ -19,60 +19,62 @@ def apply_custom_design(tractor_name):
 
     st.markdown(f"""
     <style>
-    /* Background Watermark - Visibility Increased (0.5 opacity for darker look) */
+    /* Background Cherry Colour & Full Visibility Watermark */
     .stApp {{
-        background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+        background: linear-gradient(rgba(139, 0, 0, 0.4), rgba(139, 0, 0, 0.4)), 
                     url("{img_url}") !important;
         background-repeat: no-repeat !important;
         background-size: cover !important;
         background-position: center !important;
         background-attachment: fixed !important;
-        color: white !important;
+        background-color: #8B0000 !important; /* Cherry Red Background */
     }}
 
-    /* Main Title: BIG & SHADOWED */
+    /* Tractor Name: DOUBLE SIZE & WHITE for Cherry Contrast */
     .tractor-title {{
-        font-size: 85px !important;
-        font-weight: 900 !important;
-        color: #FF3131 !important; /* Bright Red */
+        font-size: 110px !important;
+        font-weight: 950 !important;
+        color: #FFFFFF !important; /* White text for better visibility on cherry */
         text-align: center !important;
-        margin-top: -30px !important;
-        text-shadow: 3px 3px 10px rgba(0,0,0,0.8) !important;
+        margin-top: -50px !important;
+        margin-bottom: 20px !important;
+        text-shadow: 5px 5px 15px rgba(0,0,0,0.7) !important;
         font-family: 'Arial Black', sans-serif !important;
         text-transform: uppercase;
     }}
 
-    /* Metrics Row - White Boxes like Sample */
+    /* Metrics Row - White Boxes with Cherry Border */
     [data-testid="stMetric"] {{
-        background-color: rgba(255, 255, 255, 0.9) !important;
-        padding: 20px !important;
-        border-radius: 10px !important;
-        box-shadow: 0px 4px 15px rgba(0,0,0,0.5) !important;
-        border-left: 8px solid #FF3131 !important;
+        background-color: rgba(255, 255, 255, 0.95) !important;
+        padding: 25px !important;
+        border-radius: 15px !important;
+        box-shadow: 0px 8px 20px rgba(0,0,0,0.6) !important;
+        border-left: 10px solid #D2143A !important; /* Cherry border on cards */
     }}
     
     [data-testid="stMetricLabel"] {{
-        color: #333 !important;
-        font-size: 20px !important;
+        color: #000000 !important;
+        font-size: 22px !important;
         font-weight: bold !important;
     }}
 
     [data-testid="stMetricValue"] {{
-        color: #1A237E !important;
-        font-size: 45px !important;
-        font-weight: 800 !important;
+        color: #8B0000 !important; /* Cherry color for numbers */
+        font-size: 50px !important;
+        font-weight: 900 !important;
     }}
 
-    /* Sidebar Styling */
+    /* Sidebar Styling - Cherry Theme */
     section[data-testid="stSidebar"] {{
-        background-color: #1E1E1E !important;
+        background-color: #4A0404 !important; /* Deep Cherry Sidebar */
         color: white !important;
     }}
-    
-    /* Table Styling */
-    .stDataFrame {{
-        background-color: white !important;
-        border-radius: 10px !important;
+
+    /* Table & Sidebar text */
+    .stDataFrame, .stMarkdown, p, h3 {{
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border-radius: 5px;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -87,7 +89,7 @@ else:
 
 # --- 4. Sidebar Menu ---
 with st.sidebar:
-    st.header("🚜 DASHBOARD MENU")
+    st.header("🚜 JAVED RANGHAD DASHBOARD")
     base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605"]
     
     if not df.empty:
@@ -121,16 +123,27 @@ with st.sidebar:
         }
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         df.to_csv(DATA_FILE, index=False)
-        st.success("Saved!")
+        st.success("Save Ho Gaya!")
         st.rerun()
 
 # --- 5. Main Page Display ---
 apply_custom_design(active_tractor)
 
-# BIG TITLE
+# BIG WHITE TITLE
 st.markdown(f'<h1 class="tractor-title">{active_tractor}</h1>', unsafe_allow_html=True)
 
 t_df = df[df["TRACTOR"] == active_tractor]
 
 # SEQUENCE (1. Weight, 2. Kamai, 3. Kharcha, 4. Profit)
-col
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("1. TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f} KG")
+col2.metric("2. KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
+col3.metric("3. KUL KHARCHA", f"₹{t_df['TOTAL_INV'].sum():.2f}")
+col4.metric("4. NET PROFIT", f"₹{t_df['PROFIT'].sum():.2f}")
+
+st.divider()
+st.subheader(f"📊 Detailed Table: {active_tractor}")
+st.dataframe(t_df, use_container_width=True)
+
+# Delete Option
+with st.
