@@ -91,7 +91,7 @@ if os.path.exists(TRACTOR_LIST_FILE):
     with open(TRACTOR_LIST_FILE, "r") as f:
         base_tractors = [line.strip() for line in f.readlines()]
 else:
-    base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
+    base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605"]
 
 if os.path.exists(DATA_FILE):
     df = pd.read_csv(DATA_FILE)
@@ -171,4 +171,5 @@ with st.expander("🗑️ Galti Sudharein (Delete)"):
             df = df.drop(row)
             df.to_csv(DATA_FILE, index=False)
             st.rerun()
+
 
