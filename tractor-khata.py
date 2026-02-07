@@ -86,6 +86,17 @@ def set_design():
 # --- 2. Data Management ---
 DATA_FILE = "tractor_data.csv"
 TRACTOR_LIST_FILE = "tractors.txt"
+# Performance Metrics (Safe version)
+c1, c2, c3, c4 = st.columns(4)
+total_w = t_df['WEIGHT'].sum() if not t_df.empty else 0
+total_k = t_df['KAMAI'].sum() if not t_df.empty else 0
+total_i = t_df['TOTAL_INV'].sum() if not t_df.empty else 0
+total_p = t_df['PROFIT'].sum() if not t_df.empty else 0
+
+c1.metric("TOTAL WEIGHT", f"{total_w:.2f} KG")
+c2.metric("KUL KAMAI", f"₹{total_k:.2f}")
+c3.metric("KUL KHARCHA", f"₹{total_i:.2f}")
+c4.metric("NET PROFIT", f"₹{total_p:.2f}")
 
 if os.path.exists(TRACTOR_LIST_FILE):
     with open(TRACTOR_LIST_FILE, "r") as f:
@@ -171,4 +182,5 @@ with st.expander("🗑️ Galti Sudharein (Delete)"):
             df = df.drop(row)
             df.to_csv(DATA_FILE, index=False)
             st.rerun()
+
 
