@@ -5,50 +5,40 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# Custom CSS for Design & Fixing Visibility
-def set_design(tractor_name):
-    img_url = ""
-    name_up = tractor_name.upper()
-    
-    # Background logic
-    if "FARMTRACK" in name_up:
-        img_url = "https://th.bing.com/th/id/OIP.UeE_7mY6x89-f5v_F8Gj_AHaE8?rs=1&pid=ImgDetMain"
-    elif "NOVO" in name_up or "605" in name_up:
-        img_url = "https://th.bing.com/th/id/OIP.H_6E4-x2-x-S_0tS3n08RAHaFj?rs=1&pid=ImgDetMain"
-    elif "NAGISH" in name_up:
-        img_url = "https://th.bing.com/th/id/OIP.XG6nU7L2X_H0O7Q_y_XW_AHaE8?rs=1&pid=ImgDetMain"
-    else:
-        img_url = "https://cdn.pixabay.com/photo/2014/07/06/17/20/tractor-385681_1280.jpg"
+# Custom CSS for Professional Background & Text Visibility
+def set_design():
+    # Aapka naya pyara tractor background
+    img_url = "https://images.unsplash.com/photo-1594913785162-e6786b42dea3?q=80&w=2070&auto=format&fit=crop"
 
     st.markdown(f"""
     <style>
-    /* Background setup */
+    /* 1. HD Background with soft overlay */
     .stApp {{
-        background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), 
+        background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), 
                     url("{img_url}");
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
     }}
     
-    /* CHERRY RED BIG TITLE */
+    /* 2. CHERRY RED EXTRA BIG TITLE */
     .big-cherry-title {{ 
         font-size: 100px !important; 
         font-weight: 950 !important; 
         color: #800000 !important; 
         text-align: center !important; 
         margin-top: -60px !important;
-        text-shadow: 4px 4px 10px rgba(0,0,0,0.2) !important;
+        text-shadow: 4px 4px 10px rgba(0,0,0,0.3) !important;
         font-family: 'Arial Black', sans-serif !important;
         text-transform: uppercase;
     }}
 
-    /* SIDEBAR CHERRY COLOUR */
+    /* 3. SIDEBAR CHERRY COLOUR */
     [data-testid="stSidebar"] {{
         background-color: #800000 !important;
     }}
     
-    /* SIDEBAR HEADINGS & LABELS - WHITE */
+    /* 4. SIDEBAR TEXT (Headings/Labels) - WHITE */
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3,
@@ -59,7 +49,7 @@ def set_design(tractor_name):
         font-weight: bold !important;
     }}
 
-    /* INPUT BOX TEXT - PURE BLACK */
+    /* 5. INPUT BOXES TEXT - PURE BLACK */
     [data-testid="stSidebar"] input, 
     [data-testid="stSidebar"] select, 
     [data-testid="stSidebar"] .stSelectbox div,
@@ -68,11 +58,13 @@ def set_design(tractor_name):
         font-weight: 900 !important;
     }}
 
-    /* FIX FOR ADD TRACTOR BUTTON TEXT */
-    div.stButton > button {{
-        color: #000000 !important;
-        background-color: #FFFFFF !important;
-        border-radius: 5px;
+    /* 6. Metrics Card Styling */
+    [data-testid="stMetric"] {{
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        border-radius: 15px !important;
+        border-left: 10px solid #800000 !important;
+        box-shadow: 0px 8px 20px rgba(0,0,0,0.2) !important;
+        padding: 15px !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -81,14 +73,14 @@ def set_design(tractor_name):
 DATA_FILE = "tractor_data.csv"
 TRACTOR_LIST_FILE = "tractors.txt"
 
-# Load Tractor List
+# Tractor list load karna
 if os.path.exists(TRACTOR_LIST_FILE):
     with open(TRACTOR_LIST_FILE, "r") as f:
         base_tractors = [line.strip() for line in f.readlines()]
 else:
     base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
 
-# Load Records
+# Records load karna
 if os.path.exists(DATA_FILE):
     df = pd.read_csv(DATA_FILE)
 else:
@@ -107,7 +99,7 @@ with st.sidebar:
                 base_tractors.append(new_t_name.upper())
                 with open(TRACTOR_LIST_FILE, "w") as f:
                     for t in base_tractors: f.write(t + "\n")
-                st.success("Add Ho Gaya!")
+                st.success("Tractor Joda Gaya!")
                 st.rerun()
 
     active_tractor = st.selectbox("Apna Tractor Chunein", base_tractors)
@@ -118,9 +110,6 @@ with st.sidebar:
     d_name = st.text_input("Driver ka Naam")
     weight = st.number_input("Weight (KG)", min_value=0.0)
     rate = st.number_input("Rate", min_value=0.0, format="%.4f")
-    
-    st.markdown("---")
-    st.markdown("**Kharche (Expenses)**")
     diesel = st.number_input("Diesel", min_value=0.0)
     d_pay = st.number_input("Driver Kharcha", min_value=0.0)
     other = st.number_input("Other", min_value=0.0)
@@ -148,15 +137,14 @@ with st.sidebar:
         st.rerun()
 
 # --- 4. Main Page Display ---
-set_design(active_tractor)
+set_design()
 
-# Huge Cherry Title
+# Big Cherry Title
 st.markdown(f'<p class="big-cherry-title">{active_tractor}</p>', unsafe_allow_html=True)
 
-# Data for Active Tractor
 t_df = df[df["TRACTOR"] == active_tractor]
 
-# Sequence of Metrics
+# Performance Metrics
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("1. TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f} KG")
 c2.metric("2. KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
