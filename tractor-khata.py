@@ -5,11 +5,11 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# --- 2. Custom Design (DARK SIDEBAR & FULL CLEAR WATERMARK) ---
+# --- 2. Custom Design (Cherry Sidebar & High-Visibility Watermark) ---
 def apply_custom_design(tractor_name):
     name_up = tractor_name.upper()
     
-    # Asli Tractor Images (Direct Links)
+    # Asli Tractor Image Links
     if "FARMTRACK" in name_up:
         img_url = "https://th.bing.com/th/id/OIP.UeE_7mY6x89-f5v_F8Gj_AHaE8?rs=1&pid=ImgDetMain"
     elif "NOVO" in name_up or "605" in name_up:
@@ -19,7 +19,7 @@ def apply_custom_design(tractor_name):
 
     st.markdown(f"""
     <style>
-    /* 1. Main Background: FULL VISIBILITY (No Lightness) */
+    /* 1. Main Background: NO LIGHTNESS, FULL CLEAR PHOTO */
     .stApp {{
         background-image: url("{img_url}") !important;
         background-repeat: no-repeat !important;
@@ -28,12 +28,12 @@ def apply_custom_design(tractor_name):
         background-attachment: fixed !important;
     }}
 
-    /* 2. Sidebar: DARK CHERRY COLOUR (Shifted from Main) */
+    /* 2. Sidebar: DARK CHERRY RED (Untitled-1.jpg marking ke hisaab se) */
     [data-testid="stSidebar"] {{
-        background-color: #800000 !important; /* Pakka Cherry Red */
+        background-color: #800000 !important;
     }}
     
-    /* Sidebar text to White */
+    /* Sidebar Text White */
     [data-testid="stSidebar"] .stMarkdown, 
     [data-testid="stSidebar"] label, 
     [data-testid="stSidebar"] h2, 
@@ -42,24 +42,48 @@ def apply_custom_design(tractor_name):
         font-weight: bold !important;
     }}
 
-    /* 3. Tractor Title: BADA AUR SAFED (Shadow ke saath taaki photo pe dikhe) */
+    /* 3. Title: BIG WHITE (With Shadow to see clearly on photo) */
     .tractor-title {{
-        font-size: 90px !important;
+        font-size: 85px !important;
         font-weight: 950 !important;
         color: #FFFFFF !important; 
         text-align: center !important;
-        margin-top: -60px !important;
-        text-shadow: 5px 5px 15px rgba(0,0,0,0.9) !important;
+        margin-top: -50px !important;
+        text-shadow: 4px 4px 15px rgba(0,0,0,1) !important;
         font-family: 'Arial Black', sans-serif !important;
+        text-transform: uppercase;
     }}
 
-    /* 4. Metrics: Readable White Glass Look */
+    /* 4. Metrics: White Glass Style */
     [data-testid="stMetric"] {{
         background-color: rgba(255, 255, 255, 0.95) !important;
         padding: 20px !important;
-        border-radius: 15px !important;
+        border-radius: 12px !important;
         box-shadow: 0px 10px 30px rgba(0,0,0,0.5) !important;
-        border-bottom: 5px solid #800000 !important;
+        border-left: 10px solid #800000 !important;
     }}
     
     [data-testid="stMetricValue"] {{
+        color: #800000 !important;
+        font-weight: 900 !important;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- 3. Data Loading ---
+DATA_FILE = "tractor_data.csv"
+if os.path.exists(DATA_FILE):
+    df = pd.read_csv(DATA_FILE)
+else:
+    cols = ["DATE", "TRACTOR", "DRIVER_NAME", "ROUND", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
+    df = pd.DataFrame(columns=cols)
+
+# --- 4. Sidebar Menu ---
+with st.sidebar:
+    st.header("🚜 JAVED RANGHAD")
+    base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605"]
+    active_tractor = st.selectbox("Apna Tractor Chunein", base_tractors)
+    st.divider()
+    
+    st.subheader("📝 Nayi Entry")
+    date = st.date_input("Tarik")
