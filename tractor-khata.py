@@ -61,21 +61,21 @@ with st.sidebar:
     st.divider()
     
     st.subheader("📝 Nayi Entry")
-    date = st.date_input("Tarik")
+    date = st.date_input("DATE")
     d_name = st.text_input("Driver ka Naam")
     u_round = st.number_input("Round No.", min_value=1, step=1) # ROUND entry input
     weight = st.number_input("Weight (KG)", min_value=0.0)
-    rate = st.number_input("Rate", min_value=0.0, format="%.4f")
+    rate = st.number_input("RATE (KG)", min_value=0.0, format="%.4f")
     diesel = st.number_input("Diesel", min_value=0.0)
     d_pay = st.number_input("Driver Kharcha", min_value=0.0)
     other = st.number_input("Other Kharcha", min_value=0.0)
 
     if st.button("💾 SAVE RECORD"):
-        kamai = weight * rate
+        kamai = weight * RATE
         total_inv = diesel + d_pay + other
         new_row = {
             "DATE": str(date), "TRACTOR": active_tractor, "DRIVER_NAME": d_name,
-            "ROUND": u_round, "WEIGHT": weight, "RATE": rate, "KAMAI": round(kamai, 2),
+            "ROUND": u_round, "WEIGHT": weight, "RATE": RATE (KG), "KAMAI": round(kamai, 2),
             "DIESEL": diesel, "DRIVER_EXP": d_pay, "OTHER": other,
             "TOTAL_INV": round(total_inv, 2), "PROFIT": round(kamai - total_inv, 2)
         }
@@ -112,3 +112,4 @@ with st.expander("🗑️ Galti Sudharein (Delete)"):
             df.to_csv(DATA_FILE, index=False)
             st.rerun()
             
+
