@@ -5,7 +5,7 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# Custom CSS for Big Fonts, Bold Text & Background
+# Custom CSS for Big Fonts, Bold Text & White Expander Box
 def set_design():
     # Reliable HD Tractor Background
     img_url = "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
@@ -40,9 +40,8 @@ def set_design():
     /* SIDEBAR LABELS - Bada aur Bold Font */
     [data-testid="stSidebar"] label p, [data-testid="stSidebar"] label {{
         color: #FFFFFF !important;
-        font-size: 22px !important; /* Font bada kiya */
-        font-weight: 900 !important; /* Extra Bold */
-        margin-bottom: 5px !important;
+        font-size: 22px !important; 
+        font-weight: 900 !important; 
     }}
 
     /* INPUT BOXES TEXT - Bold Black */
@@ -53,14 +52,24 @@ def set_design():
         font-size: 18px !important;
     }}
 
-    /* METRIC CARDS - Font aur Size Fix */
+    /* FIX: ADD NEW TRACTOR BOX WHITE BACKGROUND */
+    [data-testid="stExpander"] {{
+        background-color: #FFFFFF !important;
+        border-radius: 10px !important;
+    }}
+    [data-testid="stExpander"] p, [data-testid="stExpander"] summary svg {{
+        color: #000000 !important;
+        font-weight: 900 !important;
+    }}
+
+    /* METRIC CARDS - Bada aur Bold Font */
     [data-testid="stMetricLabel"] p {{
-        font-size: 24px !important; /* Label bada kiya */
+        font-size: 26px !important; 
         font-weight: 900 !important;
         color: #333 !important;
     }}
     [data-testid="stMetricValue"] div {{
-        font-size: 45px !important; /* Number bada kiya */
+        font-size: 50px !important; 
         font-weight: 950 !important;
         color: #800000 !important;
     }}
@@ -94,8 +103,9 @@ else:
 with st.sidebar:
     st.header("🚜 MENU")
     
+    # ➕ ADD NEW TRACTOR (Ab ye white box mein dikhega)
     with st.expander("➕ ADD NEW TRACTOR"):
-        new_t_name = st.text_input("Tractor Name Likhein")
+        new_t_name = st.text_input("Tractor Name Likhein", key="new_tractor_input")
         if st.button("ADD TRACTOR"):
             if new_t_name and new_t_name.upper() not in base_tractors:
                 base_tractors.append(new_t_name.upper())
@@ -119,7 +129,6 @@ with st.sidebar:
     if st.button("💾 SAVE RECORD"):
         kamai = weight * rate
         total_inv = diesel + d_pay + other
-        # ERROR FIX: Closing dictionary properly
         new_row = {
             "DATE": str(date), 
             "TRACTOR": active_tractor, 
@@ -145,7 +154,7 @@ st.markdown(f'<p class="big-cherry-title">{active_tractor}</p>', unsafe_allow_ht
 
 t_df = df[df["TRACTOR"] == active_tractor]
 
-# Metric Display (Fonts are now Bigger and Bolder)
+# Performance Metrics (Fonts are now Huge and Bold)
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f} KG")
 c2.metric("KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
