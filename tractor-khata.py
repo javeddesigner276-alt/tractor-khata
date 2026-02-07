@@ -1,33 +1,39 @@
 import streamlit as st
 import pandas as pd
 import os
-from fpdf import FPDF
 
-# --- 1. App Configuration & Theme ---
+# --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# Custom CSS for Professional Look & Dynamic Watermark
-def set_bg(tractor_name):
-    # Yahan hum tractor ke hisab se image link badal sakte hain
+# Custom CSS for Big Title & Sequential Metrics
+def set_design(tractor_name):
     img_url = ""
     if "FARMTRACK" in tractor_name.upper():
-        img_url = "https://th.bing.com/th/id/OIP.XG6nU7L2X_H0O7Q_y_XW_AHaE8?rs=1&pid=ImgDetMain" # Farmtrack Image
+        img_url = "https://th.bing.com/th/id/OIP.XG6nU7L2X_H0O7Q_y_XW_AHaE8?rs=1&pid=ImgDetMain"
     elif "NOVO" in tractor_name.upper() or "605" in tractor_name:
-        img_url = "https://th.bing.com/th/id/OIP.7_z_Y-8Qk2P8Wf6y5A6Q-AHaE8?rs=1&pid=ImgDetMain" # Novo Image
+        img_url = "https://th.bing.com/th/id/OIP.7_z_Y-8Qk2P8Wf6y5A6Q-AHaE8?rs=1&pid=ImgDetMain"
     else:
-        img_url = "https://cdn.pixabay.com/photo/2014/07/06/17/20/tractor-385681_1280.jpg" # Default
+        img_url = "https://cdn.pixabay.com/photo/2014/07/06/17/20/tractor-385681_1280.jpg"
 
     st.markdown(f"""
     <style>
     .stApp {{
-        background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), 
+        background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), 
                     url("{img_url}");
         background-repeat: no-repeat;
         background-size: cover;
         background-attachment: fixed;
     }}
-    .main-title {{ font-size: 40px; font-weight: bold; color: #1E3A8A; text-align: center; text-shadow: 2px 2px 4px #ccc; }}
-    .card {{ background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }}
+    /* Tractor Name Double Size */
+    .big-title {{ 
+        font-size: 80px; 
+        font-weight: 800; 
+        color: #1E3A8A; 
+        text-align: center; 
+        margin-top: -50px;
+        text-shadow: 3px 3px 6px #aaa;
+        font-family: 'Arial Black', Gadget, sans-serif;
+    }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -39,12 +45,9 @@ else:
     cols = ["DATE", "TRACTOR", "DRIVER_NAME", "ROUND", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
     df = pd.DataFrame(columns=cols)
 
-# --- 3. Sidebar (Tractor Selection) ---
+# --- 3. Sidebar Setup ---
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/2555/2555013.png", width=100)
-    st.title("🚜 KHATA MENU")
-    
-    # 1. Separate Pages for Tractors
+    st.header("🚜 MENU")
     all_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605"]
     if not df.empty:
         all_tractors = list(set(all_tractors + df["TRACTOR"].unique().tolist()))
@@ -52,70 +55,52 @@ with st.sidebar:
     active_tractor = st.selectbox("Apna Tractor Chunein", all_tractors)
     st.divider()
     
-    # 4. Driver Name Entry
-    st.subheader("Nayi Entry Dalein")
-    date = st.date_input("Date")
-    driver_name = st.text_input("Driver Ka Naam")
-    rounds = st.number_input("Rounds", min_value=1)
+    st.subheader("Nayi Entry")
+    date = st.date_input("Tarik")
+    d_name = st.text_input("Driver ka Naam")
     weight = st.number_input("Weight (KG)", min_value=0.0)
     rate = st.number_input("Rate", min_value=0.0, format="%.4f")
-    
-    st.markdown("**Kharche (Investment)**")
-    diesel = st.number_input("Diesel Expense", min_value=0.0)
-    driver_pay = st.number_input("Driver Kharcha", min_value=0.0)
-    other_exp = st.number_input("Other Expense", min_value=0.0)
+    diesel = st.number_input("Diesel", min_value=0.0)
+    d_pay = st.number_input("Driver Kharcha", min_value=0.0)
+    other = st.number_input("Other", min_value=0.0)
 
     if st.button("SAVE RECORD"):
         kamai = weight * rate
-        total_inv = diesel + driver_pay + other_exp
+        total_inv = diesel + d_pay + other
         profit = kamai - total_inv
-        
-        new_data = {
-            "DATE": str(date), "TRACTOR": active_tractor, "DRIVER_NAME": driver_name,
-            "ROUND": rounds, "WEIGHT": weight, "RATE": rate, "KAMAI": round(kamai, 2),
-            "DIESEL": diesel, "DRIVER_EXP": driver_pay, "OTHER": other_exp,
+        new_row = {
+            "DATE": str(date), "TRACTOR": active_tractor, "DRIVER_NAME": d_name,
+            "ROUND": 1, "WEIGHT": weight, "RATE": rate, "KAMAI": round(kamai, 2),
+            "DIESEL": diesel, "DRIVER_EXP": d_pay, "OTHER": other,
             "TOTAL_INV": round(total_inv, 2), "PROFIT": round(profit, 2)
         }
-        df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         df.to_csv(DATA_FILE, index=False)
-        st.success("Data Saved Safely!")
+        st.success("Save Ho Gaya!")
         st.rerun()
 
-# --- 4. Main Page Design ---
-set_bg(active_tractor) # Background Watermark Set
-st.markdown(f'<p class="main-title">🚜 {active_tractor} HISAB-KITAB</p>', unsafe_allow_html=True)
+# --- 4. Main Page Display ---
+set_design(active_tractor)
+st.markdown(f'<p class="big-title">{active_tractor}</p>', unsafe_allow_html=True)
 
-# Filter data for active tractor only (Requirement 1)
-tractor_df = df[df["TRACTOR"] == active_tractor]
+# Requirement 1: Separate Data
+t_df = df[df["TRACTOR"] == active_tractor]
 
-# Metrics Row
+# Requirement 1 & 2: Sequence of Metrics (1. Weight, 2. Kamai, 3. Kharcha, 4. Profit)
 c1, c2, c3, c4 = st.columns(4)
-with c1: st.metric("Kul Kamai", f"₹{tractor_df['KAMAI'].sum():.2f}")
-with c2: st.metric("Kul Kharcha", f"₹{tractor_df['TOTAL_INV'].sum():.2f}")
-with c3: st.metric("Net Munafa", f"₹{tractor_df['PROFIT'].sum():.2f}", delta_color="normal")
-with c4: st.metric("Total Weight", f"{tractor_df['WEIGHT'].sum():.2f} KG")
+c1.metric("1. TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f} KG")
+c2.metric("2. KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
+c3.metric("3. KUL KHARCHA", f"₹{t_df['TOTAL_INV'].sum():.2f}")
+c4.metric("4. NET PROFIT", f"₹{t_df['PROFIT'].sum():.2f}")
 
 st.divider()
+st.dataframe(t_df, use_container_width=True)
 
-# Records Table
-st.subheader(f"Detailed Records: {active_tractor}")
-st.dataframe(tractor_df, use_container_width=True)
-
-# Download Section
-col1, col2 = st.columns(2)
-with col1:
-    csv = tractor_df.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Download Excel", data=csv, file_name=f"{active_tractor}_khata.csv")
-with col2:
-    st.info("PDF Report is generating with watermark...")
-
-# --- 5. Delete Feature ---
-with st.expander("🗑️ Purani Entry Hatayein"):
-    if not tractor_df.empty:
-        idx_to_del = st.selectbox("Kaun sa row index hatana hai?", tractor_df.index)
-        if st.button("Confirm Delete"):
-            df = df.drop(idx_to_del)
+# Delete Option
+with st.expander("Galti Sudharein (Delete)"):
+    if not t_df.empty:
+        row = st.selectbox("Kaun sa No. hatana hai?", t_df.index)
+        if st.button("Humesha ke liye hatayein"):
+            df = df.drop(row)
             df.to_csv(DATA_FILE, index=False)
-            st.warning("Entry Deleted!")
             st.rerun()
-
