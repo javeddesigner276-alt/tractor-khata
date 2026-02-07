@@ -5,33 +5,35 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# --- 2. Custom Design (Bada Naam aur Visible Watermark) ---
+# --- 2. Custom Design (Bada Naam aur Asli Tractor Watermark) ---
 def apply_custom_design(tractor_name):
     name_up = tractor_name.upper()
     
-    # Pakke links jo 100% load honge (High Quality)
+    # Direct links to real tractor images
     if "FARMTRACK" in name_up:
-        # Blue Tractor Image
-        img_url = "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg"
+        # Farmtrack Blue Tractor
+        img_url = "https://raw.githubusercontent.com/javeddesigner276-alt/tractor-khata/main/farmtrack_bg.jpg" 
+        # Note: Agar ye link kaam na kare toh ye backup use karein:
+        img_url = "https://th.bing.com/th/id/OIP.UeE_7mY6x89-f5v_F8Gj_AHaE8?rs=1&pid=ImgDetMain"
     elif "NOVO" in name_up or "605" in name_up:
-        # Red Tractor Image
-        img_url = "https://images.pexels.com/photos/2592537/pexels-photo-2592537.jpeg"
+        # Mahindra Novo Red Tractor
+        img_url = "https://th.bing.com/th/id/OIP.H_6E4-x2-x-S_0tS3n08RAHaFj?rs=1&pid=ImgDetMain"
     else:
-        # Default Farm Image
-        img_url = "https://images.pexels.com/photos/162637/tractor-agriculture-farm-drive-162637.jpeg"
+        # Default Tractor Image
+        img_url = "https://th.bing.com/th/id/OIP.XG6nU7L2X_H0O7Q_y_XW_AHaE8?rs=1&pid=ImgDetMain"
 
     st.markdown(f"""
     <style>
-    /* Background setup - Opacity adjusted to 0.7 for better visibility */
+    /* Background setup - Opacity 0.7 for clarity */
     .stApp {{
         background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), 
                     url("{img_url}") !important;
         background-repeat: no-repeat !important;
-        background-size: cover !important;
+        background-size: contain !important; /* Isse tractor pura dikhega bina kate */
         background-position: center !important;
         background-attachment: fixed !important;
     }}
-    /* Tractor Name: DOUBLE SIZE (BIG) - DARK RED */
+    /* Tractor Name: BIG & RED */
     .tractor-title {{
         font-size: 110px !important;
         font-weight: 950 !important;
@@ -42,7 +44,7 @@ def apply_custom_design(tractor_name):
         text-shadow: 4px 4px 12px rgba(0,0,0,0.4) !important;
         font-family: 'Arial Black', Gadget, sans-serif !important;
     }}
-    /* Metrics Styling - DARK BLUE & BOLD */
+    /* Metrics sequence */
     [data-testid="stMetricValue"] {{
         font-size: 48px !important;
         color: #1A237E !important;
@@ -59,17 +61,17 @@ else:
     cols = ["DATE", "TRACTOR", "DRIVER_NAME", "ROUND", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
     df = pd.DataFrame(columns=cols)
 
-# --- 4. Sidebar Menu ---
+# --- 4. Sidebar Menu (Nagish Removed) ---
 with st.sidebar:
     st.header("🚜 DASHBOARD MENU")
     
-    # Nagish hata diya gaya hai, ab sirf Farmtrack aur Novo hain
+    # Sirf Farmtrack aur Novo rakha hai
     base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605"]
     
     if not df.empty:
         existing_tractors = df["TRACTOR"].unique().tolist()
         all_tractors = sorted(list(set(base_tractors + existing_tractors)))
-        # Nagish ko agar purane data mein hai toh bhi filter se nikalne ke liye:
+        # Nagish ko filter se nikalne ke liye
         if "NAGISH 106" in all_tractors: all_tractors.remove("NAGISH 106")
     else:
         all_tractors = base_tractors
