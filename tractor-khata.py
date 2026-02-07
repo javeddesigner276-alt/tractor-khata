@@ -1,15 +1,22 @@
 import streamlit as st
 import pandas as pd
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="JAVED TRACTOR KHATA", layout="wide")
 
-# Google Sheet URL
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1K8Umx9q0IEka1O6IrIo1DrMcGgtxGbDW4raQybV_Ljg/edit?usp=sharing"
+# Google Sheet CSV Link (Direct Read)
+# Maine link ko change kiya hai taaki ye hamesha update rahe
+SHEET_ID = "1K8Umx9q0IEka1O6IrIo1DrMcGgtxGbDW4raQybV_Ljg"
+CSV_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 
-# --- STYLE (WHITE & BOLD) ---
+def load_data():
+    try:
+        # Har baar fresh data uthayega
+        return pd.read_csv(CSV_URL)
+    except:
+        return pd.DataFrame(columns=["DATE", "TRACTOR", "DRIVER_NAME", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"])
+
+# --- STYLE ---
 st.markdown("""
     <style>
     .stApp {
@@ -26,19 +33,12 @@ st.markdown("""
         color: white !important; font-weight: 900 !important; border-bottom: 2px solid white;
     }
     [data-testid="stSidebar"] label p { color: white !important; font-weight: 800 !important; font-size: 20px !important; }
-    [data-testid="stSidebar"] input { color: black !important; font-weight: bold; }
     [data-testid="stMetricValue"] div { font-size: 40px !important; font-weight: 900 !important; color: #800000 !important; }
+    .save-btn { background-color: #ffffff; color: #800000; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold; display: block; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
-# Data Load using Pandas (Public link)
-def load_data():
-    try:
-        csv_url = SHEET_URL.replace('/edit?usp=sharing', '/export?format=csv')
-        return pd.read_csv(csv_url)
-    except:
-        return pd.DataFrame(columns=["DATE", "TRACTOR", "DRIVER_NAME", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"])
-
+# --- DISPLAY ---
 df = load_data()
 tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
 
@@ -48,23 +48,15 @@ with st.sidebar:
     st.divider()
     
     st.subheader("📝 Nayi Entry")
-    dt = st.date_input("Tarik")
-    dr = st.text_input("Driver Name")
-    wt = st.number_input("Weight (KG)", min_value=0.0)
-    rt = st.number_input("Rate", min_value=0.0)
-    ds = st.number_input("Diesel", min_value=0.0)
-    dx = st.number_input("Driver Kharcha", min_value=0.0)
-    ot = st.number_input("Other Kharcha", min_value=0.0)
+    st.write("Bhai, data save karne ke liye niche button pe click karein:")
+    # Yahan aap apna Google Form link daal sakte hain
+    st.markdown('<a href="https://docs.google.com/spreadsheets/d/1K8Umx9q0IEka1O6IrIo1DrMcGgtxGbDW4raQybV_Ljg/edit" class="save-btn">📥 OPEN SHEET TO ADD DATA</a>', unsafe_allow_html=True)
+    st.info("Sheet mein entry karke wapas aaiye, dashboard apne aap update ho jayega!")
 
-    if st.button("💾 SAVE DATA"):
-        # Yahan hum simple link based save use kar rahe hain
-        # Kyunaki connection error aa raha tha, ye method use karenge:
-        st.info("Bhai, Streamlit Cloud mein 'Secrets' set karne honge. Tab tak ye button data nahi bhej payega.")
-        st.write("Kya aapne Google Sheet ko 'Editor' banaya hai? Agar haan, toh mujhe screenshot dikhao.")
-
-# --- DISPLAY ---
 st.markdown(f'<p class="main-title">{active_t}</p>', unsafe_allow_html=True)
-t_df = df[df["TRACTOR"] == active_t] if not df.empty else pd.DataFrame()
+
+# Filtering data
+t_df = df[df["TRACTOR"] == active_t] if not df.empty and "TRACTOR" in df.columns else pd.DataFrame()
 
 c1, c2, c3, c4 = st.columns(4)
 if not t_df.empty:
@@ -72,6 +64,14 @@ if not t_df.empty:
     c2.metric("KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
     c3.metric("KUL KHARCHA", f"₹{t_df['TOTAL_INV'].sum():.2f}")
     c4.metric("NET PROFIT", f"₹{t_df['PROFIT'].sum():.2f}")
+else:
+    c1.metric("TOTAL WEIGHT", "0.00")
+    c2.metric("KUL KAMAI", "₹0.00")
+    c3.metric("KUL KHARCHA", "₹0.00")
+    c4.metric("NET PROFIT", "₹0.00")
 
 st.divider()
 st.dataframe(t_df, use_container_width=True)
+
+if st.button("🔄 REFRESH DATA"):
+    st.rerun()
