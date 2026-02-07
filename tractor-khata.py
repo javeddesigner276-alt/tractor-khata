@@ -5,12 +5,12 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# Custom CSS for Big Cherry Title & Nagish-style Watermark
+# Custom CSS for Design & Black Input Text
 def set_design(tractor_name):
     img_url = ""
     name_up = tractor_name.upper()
     
-    # Nagish wala logic ab sabke liye (Background/Watermark)
+    # Background Logic
     if "FARMTRACK" in name_up:
         img_url = "https://th.bing.com/th/id/OIP.UeE_7mY6x89-f5v_F8Gj_AHaE8?rs=1&pid=ImgDetMain"
     elif "NOVO" in name_up or "605" in name_up:
@@ -22,7 +22,7 @@ def set_design(tractor_name):
 
     st.markdown(f"""
     <style>
-    /* Background setup jaisa Nagish me tha */
+    /* 1. Background Watermark */
     .stApp {{
         background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), 
                     url("{img_url}");
@@ -31,32 +31,45 @@ def set_design(tractor_name):
         background-attachment: fixed;
     }}
     
-    /* Tractor Name: CHERRY COLOUR & EXTRA BIG (Double Size) */
+    /* 2. CHERRY RED BIG TITLE */
     .big-cherry-title {{ 
-        font-size: 100px !important; /* Size aur badi kar di */
+        font-size: 110px !important; 
         font-weight: 900 !important; 
-        color: #800000 !important; /* Cherry Red Colour */
+        color: #800000 !important; 
         text-align: center !important; 
-        margin-top: -60px !important;
-        text-shadow: 4px 4px 8px rgba(0,0,0,0.2) !important;
-        font-family: 'Arial Black', Gadget, sans-serif !important;
+        margin-top: -70px !important;
+        text-shadow: 4px 4px 10px rgba(0,0,0,0.2) !important;
+        font-family: 'Arial Black', sans-serif !important;
         text-transform: uppercase;
     }}
 
-    /* Sidebar: Cherry Red */
+    /* 3. SIDEBAR CHERRY COLOUR */
     [data-testid="stSidebar"] {{
         background-color: #800000 !important;
     }}
-    [data-testid="stSidebar"] * {{
-        color: white !important;
-    }}
     
-    /* Metrics box design */
+    /* 4. SIDEBAR INPUT BOX TEXT: BLACK (Aapki Demand) */
+    [data-testid="stSidebar"] input, 
+    [data-testid="stSidebar"] select, 
+    [data-testid="stSidebar"] textarea {{
+        color: #000000 !important; /* Pure Black Text */
+        font-weight: bold !important;
+        background-color: #FFFFFF !important; /* White Background for boxes */
+    }}
+
+    /* Sidebar Labels (Heading) White hi rahengi taaki dikhen */
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] p {{
+        color: #FFFFFF !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+    }}
+
+    /* 5. Metrics Cards */
     [data-testid="stMetric"] {{
         background-color: white !important;
-        border-radius: 10px !important;
-        border-left: 8px solid #800000 !important;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.1) !important;
+        border-radius: 12px !important;
+        border-left: 10px solid #800000 !important;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.1) !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -105,12 +118,12 @@ with st.sidebar:
 # --- 4. Main Page Display ---
 set_design(active_tractor)
 
-# Yahan Cherry color aur Bada Title apply ho raha hai
+# Main Title (Cherry & Big)
 st.markdown(f'<p class="big-cherry-title">{active_tractor}</p>', unsafe_allow_html=True)
 
 t_df = df[df["TRACTOR"] == active_tractor]
 
-# Sequence of Metrics (1. Weight, 2. Kamai, 3. Kharcha, 4. Profit)
+# Sequential Metrics
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("1. TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f} KG")
 c2.metric("2. KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
