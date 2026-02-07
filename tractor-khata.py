@@ -34,8 +34,8 @@ def apply_custom_design(tractor_name):
     }}
     /* Tractor Name: DOUBLE SIZE (BIG) - RED COLOR */
     .tractor-title {{
-        font-size: 100px !important;
-        font-weight: 900 !important;
+        font-size: 60px !important;
+        font-weight: 800 !important;
         color: #B22222 !important;
         text-align: center !important;
         margin-top: -40px !important;
@@ -154,3 +154,4 @@ with st.expander("🗑️ Entry Delete Karein (Galti Sudharein)"):
             st.rerun()
     else:
         st.info("Abhi koi data nahi hai delete karne ke liye.")
+
