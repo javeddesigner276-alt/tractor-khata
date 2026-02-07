@@ -37,13 +37,13 @@ if os.path.exists(TRACTOR_LIST_FILE):
     with open(TRACTOR_LIST_FILE, "r") as f:
         base_tractors = [line.strip() for line in f.readlines()]
 else:
-    base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605"]
+    base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
 
 # Load CSV Data
 if os.path.exists(DATA_FILE):
     df = pd.read_csv(DATA_FILE)
 else:
-    cols = ["DATE", "TRACTOR", "DRIVER_NAME", "ROUND", "WEIGHT", "RATE (KG)", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
+    cols = ["DATE", "TRACTOR", "DRIVER_NAME", "ROUND", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
     df = pd.DataFrame(columns=cols)
 
 # --- 3. Sidebar Setup ---
@@ -68,13 +68,13 @@ with st.sidebar:
     d_name = st.text_input("Driver ka Naam")
     u_round = st.number_input("Round No.", min_value=1, step=1)
     weight = st.number_input("Weight (KG)", min_value=0.0)
-    rate = st.number_input("Rate (KG)", min_value=0.0, format="%.4f")
+    rate = st.number_input("Rate", min_value=0.0, format="%.4f")
     diesel = st.number_input("Diesel", min_value=0.0)
     d_pay = st.number_input("Driver Kharcha", min_value=0.0)
     other = st.number_input("Other Kharcha", min_value=0.0)
 
     if st.button("💾 SAVE RECORD"):
-        kamai = weight * rate (KG)
+        kamai = weight * rate
         total_inv = diesel + d_pay + other
         new_row = {
             "DATE": date_val.strftime("%d/%m/%Y"), 
@@ -82,7 +82,7 @@ with st.sidebar:
             "DRIVER_NAME": d_name,
             "ROUND": int(u_round), 
             "WEIGHT": weight, 
-            "RATE": rate (KG), 
+            "RATE": rate, 
             "KAMAI": round(kamai, 2),
             "DIESEL": diesel, 
             "DRIVER_EXP": d_pay, 
@@ -111,7 +111,7 @@ c4.metric("NET PROFIT", f"₹{t_df['PROFIT'].sum() if not t_df.empty else 0:.2f}
 st.divider()
 
 # Display Table with correct columns
-show_cols = ["DATE", "DRIVER_NAME", "ROUND", "WEIGHT", "RATE (KG)", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
+show_cols = ["DATE", "DRIVER_NAME", "ROUND", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
 
 if not t_df.empty:
     st.dataframe(t_df[show_cols], use_container_width=True)
@@ -125,4 +125,3 @@ with st.expander("🗑️ Galti Sudharein (Delete)"):
             df = df.drop(row_idx)
             df.to_csv(DATA_FILE, index=False)
             st.rerun()
-
