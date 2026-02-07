@@ -56,13 +56,13 @@ with st.sidebar:
     st.divider()
     
     st.subheader("Nayi Entry")
-    date = st.date_input("Tarik")
-    d_name = st.text_input("Driver ka Naam")
-    weight = st.number_input("Weight (KG)", min_value=0.0)
-    rate = st.number_input("Rate", min_value=0.0, format="%.4f")
-    diesel = st.number_input("Diesel", min_value=0.0)
-    d_pay = st.number_input("Driver Kharcha", min_value=0.0)
-    other = st.number_input("Other", min_value=0.0)
+    date = st.date_input("DATE")
+    d_name = st.text_input("DRIVER NAME")
+    weight = st.number_input("WEIGHT (KG)", min_value=0.0)
+    rate = st.number_input("RATE", min_value=0.0, format="%.4f")
+    diesel = st.number_input("DIESEL", min_value=0.0)
+    d_pay = st.number_input("DRIVER KHARCHA", min_value=0.0)
+    other = st.number_input("OTHER", min_value=0.0)
 
     if st.button("SAVE RECORD"):
         kamai = weight * rate
@@ -104,3 +104,4 @@ with st.expander("Galti Sudharein (Delete)"):
             df = df.drop(row)
             df.to_csv(DATA_FILE, index=False)
             st.rerun()
+
