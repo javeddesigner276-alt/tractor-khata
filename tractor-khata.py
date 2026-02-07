@@ -5,12 +5,12 @@ import os
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# Custom CSS for Design & Black Input Text
+# Custom CSS for Design & Text Colors
 def set_design(tractor_name):
     img_url = ""
     name_up = tractor_name.upper()
     
-    # Background Logic
+    # Background logic (Nagish style for all)
     if "FARMTRACK" in name_up:
         img_url = "https://th.bing.com/th/id/OIP.UeE_7mY6x89-f5v_F8Gj_AHaE8?rs=1&pid=ImgDetMain"
     elif "NOVO" in name_up or "605" in name_up:
@@ -31,14 +31,14 @@ def set_design(tractor_name):
         background-attachment: fixed;
     }}
     
-    /* 2. CHERRY RED BIG TITLE */
+    /* 2. CHERRY RED EXTRA BIG TITLE */
     .big-cherry-title {{ 
-        font-size: 110px !important; 
-        font-weight: 900 !important; 
+        font-size: 120px !important; 
+        font-weight: 950 !important; 
         color: #800000 !important; 
         text-align: center !important; 
-        margin-top: -70px !important;
-        text-shadow: 4px 4px 10px rgba(0,0,0,0.2) !important;
+        margin-top: -80px !important;
+        text-shadow: 5px 5px 12px rgba(0,0,0,0.2) !important;
         font-family: 'Arial Black', sans-serif !important;
         text-transform: uppercase;
     }}
@@ -48,23 +48,38 @@ def set_design(tractor_name):
         background-color: #800000 !important;
     }}
     
-    /* 4. SIDEBAR INPUT BOX TEXT: BLACK (Aapki Demand) */
-    [data-testid="stSidebar"] input, 
-    [data-testid="stSidebar"] select, 
-    [data-testid="stSidebar"] textarea {{
-        color: #000000 !important; /* Pure Black Text */
+    /* 4. SIDEBAR HEADINGS (MENU & NAYI ENTRY) - WHITE */
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] .stMarkdown p {{
+        color: #FFFFFF !important;
         font-weight: bold !important;
-        background-color: #FFFFFF !important; /* White Background for boxes */
+        font-size: 24px !important;
     }}
 
-    /* Sidebar Labels (Heading) White hi rahengi taaki dikhen */
-    [data-testid="stSidebar"] label, [data-testid="stSidebar"] p {{
+    /* 5. SIDEBAR LABELS - WHITE */
+    [data-testid="stSidebar"] label {{
         color: #FFFFFF !important;
         font-size: 18px !important;
         font-weight: bold !important;
     }}
 
-    /* 5. Metrics Cards */
+    /* 6. INPUT BOXES TEXT MATTER - PURE BLACK */
+    [data-testid="stSidebar"] input, 
+    [data-testid="stSidebar"] select, 
+    [data-testid="stSidebar"] div[role="listbox"] {{
+        color: #000000 !important; 
+        font-weight: 900 !important;
+        background-color: #FFFFFF !important;
+    }}
+    
+    /* Fix for number inputs and text inputs specifically */
+    input[type="text"], input[type="number"], .stSelectbox div {{
+        color: #000000 !important;
+    }}
+
+    /* 7. Metrics Cards */
     [data-testid="stMetric"] {{
         background-color: white !important;
         border-radius: 12px !important;
@@ -87,12 +102,16 @@ with st.sidebar:
     st.header("🚜 MENU")
     all_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
     if not df.empty:
-        all_tractors = list(set(all_tractors + df["TRACTOR"].unique().tolist()))
+        # Keep list order clean
+        unique_tractors = df["TRACTOR"].unique().tolist()
+        for t in unique_tractors:
+            if t not in all_tractors:
+                all_tractors.append(t)
     
     active_tractor = st.selectbox("Apna Tractor Chunein", all_tractors)
     st.divider()
     
-    st.subheader("Nayi Entry")
+    st.subheader("📝 Nayi Entry")
     date = st.date_input("Tarik")
     d_name = st.text_input("Driver ka Naam")
     weight = st.number_input("Weight (KG)", min_value=0.0)
@@ -101,7 +120,7 @@ with st.sidebar:
     d_pay = st.number_input("Driver Kharcha", min_value=0.0)
     other = st.number_input("Other", min_value=0.0)
 
-    if st.button("SAVE RECORD"):
+    if st.button("💾 SAVE RECORD"):
         kamai = weight * rate
         total_inv = diesel + d_pay + other
         new_row = {
@@ -118,7 +137,7 @@ with st.sidebar:
 # --- 4. Main Page Display ---
 set_design(active_tractor)
 
-# Main Title (Cherry & Big)
+# Main Title (Cherry & Huge)
 st.markdown(f'<p class="big-cherry-title">{active_tractor}</p>', unsafe_allow_html=True)
 
 t_df = df[df["TRACTOR"] == active_tractor]
@@ -134,7 +153,7 @@ st.divider()
 st.dataframe(t_df, use_container_width=True)
 
 # Delete Option
-with st.expander("Galti Sudharein (Delete)"):
+with st.expander("🗑️ Galti Sudharein (Delete)"):
     if not t_df.empty:
         row = st.selectbox("Kaun sa No. hatana hai?", t_df.index)
         if st.button("Humesha ke liye hatayein"):
