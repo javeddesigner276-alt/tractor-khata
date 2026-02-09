@@ -4,10 +4,11 @@ import pandas as pd
 # --- 1. App Configuration ---
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
-# AAPKA ZOHO CSV LINK
-# Note: Is link ke kaam karne ke liye Zoho mein Sheet select karke Publish karna zaroori hai
+# AAPKA ZOHO CSV LINK (Directly converted for Python)
+# Maine aapke link ke aage ?mode=csv jod diya hai taaki data seedha uth sake
 ZOHO_URL = "https://sheet.zohopublic.in/sheet/published/nkkiha1063d1e61dd48a49008ceb6396f1a1a?mode=csv"
 
+# --- 2. Custom Design ---
 def set_design():
     img_url = "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
     st.markdown(f"""
@@ -27,45 +28,56 @@ def set_design():
     </style>
     """, unsafe_allow_html=True)
 
-@st.cache_data(ttl=5) # Sirf 5 second ka cache
+# --- 3. Data Loading Logic ---
+@st.cache_data(ttl=10) # 10 second refresh rate
 def load_data():
     try:
-        # Zoho se data uthana
+        # Zoho se data read karna
         data = pd.read_csv(ZOHO_URL)
-        data.columns = data.columns.str.strip() # Faltu space hatana
+        # Columns ke naam saaf karna
+        data.columns = data.columns.str.strip()
+        
+        # Numbers ko float mein badalna
+        numeric_cols = ["WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
+        for col in numeric_cols:
+            if col in data.columns:
+                data[col] = pd.to_numeric(data[col], errors='coerce').fillna(0)
+        
+        # Tractor names ko upper case karna
+        if "TRACTOR" in data.columns:
+            data["TRACTOR"] = data["TRACTOR"].astype(str).str.strip().str.upper()
+            
         return data
     except Exception as e:
-        # Agar error aaye toh khali table dikhao aur error msg do
-        st.sidebar.error("⚠️ Zoho se link nahi ban pa raha. Sheet check karein!")
+        # Agar error aaye toh dashboard par dikhao
+        st.error(f"⚠️ Zoho Connection Error: Link sahi nahi hai ya Sheet publish nahi hui.")
         return pd.DataFrame()
 
+# --- 4. Page Layout ---
 set_design()
 df = load_data()
+
+# Tractor ki list (Zoho mein jo naam likhenge wahi yahan dikhenge)
 base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
 
 with st.sidebar:
     st.header("🚜 MENU")
     active_tractor = st.selectbox("Apna Tractor Chunein", base_tractors)
     st.divider()
+    st.success("✅ Connected to Zoho Sheet")
     if st.button("🔄 REFRESH DATA"):
         st.cache_data.clear()
         st.rerun()
 
+# Tractor Name Title
 st.markdown(f'<p class="big-cherry-title">{active_tractor}</p>', unsafe_allow_html=True)
 
 if not df.empty:
-    # Column check aur cleaning
     if "TRACTOR" in df.columns:
-        # Case insensitive filtering
-        t_df = df[df["TRACTOR"].astype(str).str.strip().str.upper() == active_tractor.upper()].copy()
+        # Filter for selected tractor
+        t_df = df[df["TRACTOR"] == active_tractor.upper()].copy()
         
-        # Numbers ko sahi format mein laana
-        numeric_cols = ["WEIGHT", "KAMAI", "TOTAL_INV", "PROFIT"]
-        for col in numeric_cols:
-            if col in t_df.columns:
-                t_df[col] = pd.to_numeric(t_df[col], errors='coerce').fillna(0)
-
-        # 4 Metrics Display
+        # Metrics Display
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f} KG")
         c2.metric("KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
@@ -73,8 +85,16 @@ if not df.empty:
         c4.metric("NET PROFIT", f"₹{t_df['PROFIT'].sum():.2f}")
 
         st.divider()
-        st.dataframe(t_df, use_container_width=True)
+        
+        # Display Table
+        show_cols = ["DATE", "DRIVER_NAME", "ROUND", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
+        actual_cols = [c for c in show_cols if c in t_df.columns]
+        
+        if not t_df.empty:
+            st.dataframe(t_df[actual_cols], use_container_width=True, hide_index=True)
+        else:
+            st.info(f"Bhai, {active_tractor} ka abhi koi data Zoho mein nahi hai.")
     else:
-        st.warning("Zoho Sheet mein 'TRACTOR' column nahi mila. Check karein!")
+        st.error("Error: Zoho Sheet mein 'TRACTOR' naam ka column nahi mila!")
 else:
-    st.info("Bhai, Zoho Sheet publish nahi hai ya khali hai. Upar diye gaye steps follow karein!")
+    st.warning("Zoho Sheet load nahi ho rahi. Check karein ki apne Sheet ko 'Publish' kiya hai ya nahi.")
