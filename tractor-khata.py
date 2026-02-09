@@ -5,9 +5,9 @@ import pandas as pd
 st.set_page_config(page_title="JAVED RANGHAD TRACTOR KHATA", layout="wide")
 
 # AAPKA ZOHO CSV LINK
+# Note: Is link ke kaam karne ke liye Zoho mein Sheet select karke Publish karna zaroori hai
 ZOHO_URL = "https://sheet.zohopublic.in/sheet/published/nkkiha1063d1e61dd48a49008ceb6396f1a1a?mode=csv"
 
-# --- 2. Custom Design ---
 def set_design():
     img_url = "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
     st.markdown(f"""
@@ -24,61 +24,48 @@ def set_design():
     [data-testid="stSidebar"] {{ background-color: #800000 !important; }}
     [data-testid="stSidebar"] label p {{ color: #FFFFFF !important; font-size: 22px !important; font-weight: 900 !important; }}
     [data-testid="stMetricValue"] div {{ font-size: 45px !important; font-weight: 950 !important; color: #800000 !important; }}
-    [data-testid="stSidebar"] h1 {{ color: #FFFFFF !important; border-bottom: 2px solid white; }}
-    .stDataFrame {{ background-color: white; border-radius: 10px; }}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. Data Loading Logic ---
-@st.cache_data(ttl=10) # 10 second refresh rate
+@st.cache_data(ttl=5) # Sirf 5 second ka cache
 def load_data():
     try:
-        # Zoho CSV se data load karna
+        # Zoho se data uthana
         data = pd.read_csv(ZOHO_URL)
-        
-        # 1. Columns ke aage-piche se faltu space hatana
-        data.columns = data.columns.str.strip()
-        
-        # 2. Saare numeric columns ko sahi karna (agar Zoho mein text ho toh 0 kar dega)
-        numeric_cols = ["WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
-        for col in numeric_cols:
-            if col in data.columns:
-                data[col] = pd.to_numeric(data[col], errors='coerce').fillna(0)
-        
-        # 3. Tractor column ke naam bhi saaf karna
-        if "TRACTOR" in data.columns:
-            data["TRACTOR"] = data["TRACTOR"].astype(str).str.strip().str.upper()
-            
+        data.columns = data.columns.str.strip() # Faltu space hatana
         return data
     except Exception as e:
-        st.error(f"Zoho Connection Error: {e}")
+        # Agar error aaye toh khali table dikhao aur error msg do
+        st.sidebar.error("⚠️ Zoho se link nahi ban pa raha. Sheet check karein!")
         return pd.DataFrame()
 
-# --- 4. Main App Logic ---
 set_design()
 df = load_data()
-
-# Tractor ki list (Zoho mein jo naam hain wahi yahan likhein)
 base_tractors = ["FARMTRACK 60", "MAHINDRA NOVO 605", "NAGISH 106"]
 
 with st.sidebar:
     st.header("🚜 MENU")
     active_tractor = st.selectbox("Apna Tractor Chunein", base_tractors)
     st.divider()
-    st.write("✅ Status: Live from Zoho")
-    if st.button("🔄 REFRESH HISAB"):
+    if st.button("🔄 REFRESH DATA"):
         st.cache_data.clear()
         st.rerun()
 
-# Title Display
 st.markdown(f'<p class="big-cherry-title">{active_tractor}</p>', unsafe_allow_html=True)
 
 if not df.empty:
+    # Column check aur cleaning
     if "TRACTOR" in df.columns:
-        # Data Filter karna
-        t_df = df[df["TRACTOR"] == active_tractor.upper()].copy()
+        # Case insensitive filtering
+        t_df = df[df["TRACTOR"].astype(str).str.strip().str.upper() == active_tractor.upper()].copy()
         
-        # Metrics Display (4 Bade Dabbe)
+        # Numbers ko sahi format mein laana
+        numeric_cols = ["WEIGHT", "KAMAI", "TOTAL_INV", "PROFIT"]
+        for col in numeric_cols:
+            if col in t_df.columns:
+                t_df[col] = pd.to_numeric(t_df[col], errors='coerce').fillna(0)
+
+        # 4 Metrics Display
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("TOTAL WEIGHT", f"{t_df['WEIGHT'].sum():.2f} KG")
         c2.metric("KUL KAMAI", f"₹{t_df['KAMAI'].sum():.2f}")
@@ -86,17 +73,8 @@ if not df.empty:
         c4.metric("NET PROFIT", f"₹{t_df['PROFIT'].sum():.2f}")
 
         st.divider()
-        
-        # Table Display
-        # Sirf wahi columns dikhana jo zaroori hain (Order set kar diya hai)
-        order_cols = ["DATE", "DRIVER_NAME", "ROUND", "WEIGHT", "RATE", "KAMAI", "DIESEL", "DRIVER_EXP", "OTHER", "TOTAL_INV", "PROFIT"]
-        available_cols = [c for c in order_cols if c in t_df.columns]
-        
-        if not t_df.empty:
-            st.dataframe(t_df[available_cols], use_container_width=True, hide_index=True)
-        else:
-            st.warning(f"Bhai, {active_tractor} ka koi record Zoho Sheet mein nahi mila.")
+        st.dataframe(t_df, use_container_width=True)
     else:
-        st.error("Galti: Zoho Sheet mein 'TRACTOR' naam ka column nahi mila!")
+        st.warning("Zoho Sheet mein 'TRACTOR' column nahi mila. Check karein!")
 else:
-    st.info("Zoho Sheet load ho rahi hai ya khali hai. Refresh karke dekhein.")
+    st.info("Bhai, Zoho Sheet publish nahi hai ya khali hai. Upar diye gaye steps follow karein!")
